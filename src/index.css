@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #fcf8f2; /* Tom creme/areia bem acolhedor */
+    color: #292524;            /* Stone-800 */
+    margin: 0;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+}

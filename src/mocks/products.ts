@@ -1,0 +1,151 @@
+import type { Product, Unit } from '../types';
+
+export const UNITS_MOCK: Unit[] = [
+  { id: '1', name: 'Recife - Boa Viagem', city: 'Recife', address: 'Av. Boa Viagem, 1200' },
+  { id: '2', name: 'Olinda - Sítio Histórico', city: 'Olinda', address: 'Rua do Amparo, 85' },
+  { id: '3', name: 'São Paulo - Paulista', city: 'São Paulo', address: 'Av. Paulista, 900' },
+];
+
+export const PRODUCTS_MOCK: Product[] = [
+  {
+    id: 'p1',
+    name: 'Cuscuz Nordestino Completo',
+    description: 'Cuscuz de milho fofinho com carne de sol desfiada, queijo coalho grelhado e manteiga de garrafa.',
+    price: 22.90,
+    category: 'cuscuz',
+    image: '/products/Cuscuz_Nordestino_Completo.png',
+  },
+  {
+    id: 'p2',
+    name: 'Cuscuz Nordestino com Charque e Requeijão',
+    description: 'Cuscuz de milho fofinho com charque desfiada, requeijão cremoso, cebola roxa refogada e cheiro-verde.',
+    price: 22.90,
+    category: 'cuscuz',
+    image: '/products/Cuscuz_Nordestino_com_Charque_e_Requeijao.png',
+  },
+  {
+    id: 'p3',
+    name: 'Cuscuz Nordestino Sertanejo',
+    description: 'Cuscuz de milho fofinho com ovos mexidos, queijo coalho, tomate fresco, coentro e manteiga de garrafa.',
+    price: 22.90,
+    category: 'cuscuz',
+    image: '/products/Cuscuz_Nordestino_Sertanejo.png',
+  },
+  {
+    id: 'p4',
+    name: 'Tapioca de Carne Seca',
+    description: 'Tapioca crocante recheada com carne de sol, requeijão cremoso e finalizada com manteiga de garrafa.',
+    price: 16.50,
+    category: 'tapioca',
+    image: '/products/Tapioca_de_Carne_Seca.png',
+  },
+  {
+    id: 'p5',
+    name: 'Tapioca Nordestina',
+    description: 'Tapioca crocante recheada com queijo coalho e coco fresco.',
+    price: 16.50,
+    category: 'tapioca',
+    image: '/products/Tapioca_Nordestina.png',
+  },
+  {
+    id: 'p6',
+    name: 'Baião de Dois',
+    description: 'Arroz com feijão de corda, queijo coalho, bacon e carne de sol.',
+    price: 34.90,
+    category: 'pratos',
+    image: '/products/Baiao_de_Dois.png',
+  },
+  {
+    id: 'p7',
+    name: 'Carne de Sol com Macaxeira Frita',
+    description: 'Carne de sol acebolada com macaxeira frita.',
+    price: 48.00,
+    category: 'pratos',
+    image: '/products/Carne_de_Sol_com_Macaxeira_Frita.png',
+  },
+  {
+    id: 'p8',
+    name: 'Escondidinho Nordestino',
+    description: 'Purê cremoso de macaxeira recheado com charque desfiada e acebolada, coberto com queijo coalho gratinado e finalizado com manteiga de garrafa.',
+    price: 32.90,
+    category: 'pratos',
+    image: '/products/Escondidinho_Nordestino.png',
+  },
+  {
+    id: 'p9',
+    name: 'Cartola Pernambucana',
+    description: 'Banana frita com queijo coalho derretido, polvilhada com açúcar e canela.',
+    price: 14.00,
+    category: 'sobremesas',
+    image: '/products/Cartola_Pernambucana.png',
+    availableUnits: ['1', '2'], // Exclusivo Recife e Olinda
+  },
+  {
+    id: 'p10',
+    name: 'Bolo de Rolo',
+    description: 'Finas camadas de bolo amanteigado enroladas com recheio cremoso de goiabada cascão.',
+    price: 14.00,
+    category: 'sobremesas',
+    image: '/products/Bolo_de_Rolo.png',
+    availableUnits: ['1', '2'], // Exclusivo Recife e Olinda
+  },
+  {
+    id: 'p11',
+    name: 'Suco Natural de Cajá',
+    description: 'Suco natural da fruta típica nordestina, bem gelado e refrescante.',
+    price: 9.90,
+    category: 'bebidas',
+    image: '/products/Suco_Natural_de_Caja.png',
+  },
+  {
+    id: 'p12',
+    name: 'Suco Natural de Caju',
+    description: 'Suco natural da fruta típica nordestina, bem gelado e refrescante.',
+    price: 9.90,
+    category: 'bebidas',
+    image: '/products/Suco_Natural_de_Caju.png',
+  },
+  {
+    id: 'p13',
+    name: 'Caipirinha de Caju',
+    description: 'Deliciosa caipirinha feita com cachaça, caju fresco, açúcar e gelo.',
+    price: 15.00,
+    category: 'bebidas',
+    image: '/products/Caipirinha_de_Caju.png',
+    availableUnits: ['1', '3'], // Exclusivo Recife e São Paulo
+  },
+  {
+    id: 'p14',
+    name: 'Caipirinha de Cajá',
+    description: 'Deliciosa caipirinha feita com cachaça, cajá fresco, açúcar e gelo.',
+    price: 15.00,
+    category: 'bebidas',
+    image: '/products/Caipirinha_de_Caja.png',
+    availableUnits: ['1', '3'], // Exclusivo Recife e São Paulo
+  },
+  {
+    id: 'p15',
+    name: 'Batida de Coco',
+    description: 'Deliciosa batida cremosa feita com cachaça, leite de coco, leite condensado e gelo.',
+    price: 9.90,
+    category: 'bebidas',
+    image: '/products/Batida_de_Coco.png',
+    availableUnits: ['1', '3'], // Exclusivo Recife e São Paulo
+  },
+  {
+    id: 'p16',
+    name: 'Café Coado na Hora',
+    description: 'Café especial coado no coador de pano à moda tradicional.',
+    price: 6.50,
+    category: 'bebidas',
+    image: '/products/Cafe_Coado.png',
+  },
+  {
+    id: 'p17',
+    name: 'Bolo de Macaxeira Cremoso',
+    description: 'Fatia generosa de bolo caseiro de macaxeira com coco, textura úmida e cremosa, levemente tostado.',
+    price: 11.90,
+    category: 'sobremesas',
+    image: '/products/Bolo_de_Macaxeira.png',
+  },
+];
