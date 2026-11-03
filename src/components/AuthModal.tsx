@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ShieldCheck, User, Lock, Mail, Phone, FileText } from 'lucide-react';
+import { X, User, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface AuthModalProps {
@@ -14,12 +14,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
 
   // Estados do Login
   const [loginIdentifier, setLoginIdentifier] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
 
   // Estados do Cadastro
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [cpf, setCpf] = useState('');
+  const [password, setPassword] = useState('');
   const [lgpdChecked, setLgpdChecked] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -27,13 +29,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const success = login(loginIdentifier);
+    // Ajuste para passar a senha junto com o identificador no login, se o seu AuthContext exigir
+    const success = login(loginIdentifier, loginPassword);
     if (success) {
       setErrorMsg('');
       if (onSuccess) onSuccess();
       onClose();
     } else {
-      setErrorMsg('CPF ou E-mail não encontrado. Cadastre-se primeiro!');
+      setErrorMsg('CPF/E-mail ou senha incorretos. Verifique seus dados!');
     }
   };
 
@@ -44,7 +47,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
       return;
     }
 
-    const success = register({ name, email, phone, cpf, points: 0 }, lgpdChecked);
+    // Passando a senha junto para salvar no cadastro
+    const success = register({ name, email, phone, cpf, password, points: 0 }, lgpdChecked);
     if (success) {
       setErrorMsg('');
       if (onSuccess) onSuccess();
@@ -79,7 +83,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
             /* Formulário de Login */
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-stone-700 mb-1">CPF ou E-mail cadastrado:</label>
+                <label className="block text-xs font-bold text-stone-700 mb-1">CPF ou e-mail cadastrado:</label>
                 <div className="relative">
                   <input
                     type="text"
@@ -87,12 +91,27 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                     placeholder="Ex: 000.000.000-00 ou seu@email.com"
                     value={loginIdentifier}
                     onChange={(e) => setLoginIdentifier(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 text-xs bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-700"
+                    className="w-full pl-9 pr-3 py-2.5 text-xs text-stone-900 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-700"
                   />
                   <User size={16} className="absolute left-3 top-3 text-stone-400" />
                 </div>
               </div>
 
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-1">Senha:</label>
+                <div className="relative">
+                  <input
+                    type="password"
+                    required
+                    placeholder="Digite sua senha"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2.5 text-xs text-stone-900 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-700 placeholder:text-stone-400"
+                  />
+                  <Lock size={16} className="absolute left-3 top-3 text-stone-400" />
+                </div>
+              </div>
+              
               <button
                 type="submit"
                 className="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 rounded-xl transition-colors cursor-pointer shadow-md text-sm"
@@ -111,7 +130,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
               </div>
             </form>
           ) : (
-            /* Formulário de Cadastro com LGPD */
+            /* Formulário de Cadastro com LGPD e Senha */
             <form onSubmit={handleRegisterSubmit} className="space-y-3">
               <div>
                 <label className="block text-xs font-bold text-stone-700 mb-0.5">Nome Completo:</label>
@@ -121,7 +140,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                   placeholder="Seu nome"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-stone-50 border border-stone-300 rounded-xl focus:ring-2 focus:ring-amber-700"
+                  className="w-full px-3 py-2 text-xs text-stone-900 bg-stone-50 border border-stone-300 rounded-xl focus:ring-2 focus:ring-amber-700"
                 />
               </div>
 
@@ -134,18 +153,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                     placeholder="000.000.000-00"
                     value={cpf}
                     onChange={(e) => setCpf(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-stone-50 border border-stone-300 rounded-xl focus:ring-2 focus:ring-amber-700"
+                    className="w-full px-3 py-2 text-xs text-stone-900 bg-stone-50 border border-stone-300 rounded-xl focus:ring-2 focus:ring-amber-700"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-0.5">Telefone / WhatsApp:</label>
+                  <label className="block text-xs font-bold text-stone-700 mb-0.5">WhatsApp:</label>
                   <input
                     type="tel"
                     required
-                    placeholder="(81) 99999-9999"
+                    placeholder="(41) 99999-9999"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-stone-50 border border-stone-300 rounded-xl focus:ring-2 focus:ring-amber-700"
+                    className="w-full px-3 py-2 text-xs text-stone-900 bg-stone-50 border border-stone-300 rounded-xl focus:ring-2 focus:ring-amber-700"
                   />
                 </div>
               </div>
@@ -158,7 +177,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                   placeholder="seu@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-stone-50 border border-stone-300 rounded-xl focus:ring-2 focus:ring-amber-700"
+                  className="w-full px-3 py-2 text-xs text-stone-900 bg-stone-50 border border-stone-300 rounded-xl focus:ring-2 focus:ring-amber-700"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-0.5">Senha de Acesso:</label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Crie uma senha segura"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-3 py-2 text-xs text-stone-900 bg-stone-50 border border-stone-300 rounded-xl focus:ring-2 focus:ring-amber-700"
                 />
               </div>
 

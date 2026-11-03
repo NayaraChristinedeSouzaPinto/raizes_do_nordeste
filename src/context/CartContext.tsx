@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 import type { Product, Unit } from '../types';
 import { UNITS_MOCK } from '../mocks/products';
+import { useAuth } from './AuthContext';
 
 export interface CartItem {
   product: Product;
@@ -18,6 +19,7 @@ interface CartContextData {
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   totalAmount: number;
+  checkoutCart: () => void;
 }
 
 const CartContext = createContext<CartContextData>({} as CartContextData);
@@ -25,6 +27,7 @@ const CartContext = createContext<CartContextData>({} as CartContextData);
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedUnit, setSelectedUnit] = useState<Unit>(UNITS_MOCK[0]);
+  const { user, addPoints } = useAuth();
 
   const addToCart = (product: Product) => {
     setCart(prev => {
@@ -65,6 +68,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     0
   );
 
+  // Função que processa o checkout e pontua o usuário (1 ponto a cada R$ 10,00)
+  const checkoutCart = () => {
+    if (user && totalAmount > 0) {
+      addPoints(totalAmount);
+    }
+    clearCart();
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -78,6 +89,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateQuantity,
         clearCart,
         totalAmount,
+        checkoutCart,
       }}
     >
       {children}

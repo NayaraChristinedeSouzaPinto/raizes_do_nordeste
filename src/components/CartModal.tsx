@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { X, Trash2, Plus, Minus, CheckCircle, Award, ShieldCheck } from 'lucide-react';
+import { X, Trash2, Plus, Minus, CheckCircle, Award, ShieldCheck, User, Gift } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { AuthModal } from './AuthModal';
 
 interface CartModalProps {
   isOpen: boolean;
@@ -8,206 +10,244 @@ interface CartModalProps {
 }
 
 export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
-  const { cart, selectedUnit, updateQuantity, removeFromCart, clearCart, totalAmount } = useCart();
-  const [orderPlaced, setOrderPlaced] = useState(false);
+  const { cart, selectedUnit, updateQuantity, removeFromCart, totalAmount, checkoutCart, addToCart } = useCart();
+  const { user, redeemPoints } = useAuth();
   
-  // Campos exigidos pelo fluxo de Fidelidade (CPF) e LGPD
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [customerCpf, setCustomerCpf] = useState('');
-  const [isFidelidadeApplied, setIsFidelidadeApplied] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [redeemSuccessMsg, setRedeemSuccessMsg] = useState('');
 
   if (!isOpen) return null;
 
-  // Simula a validação do CPF no clube de fidelidade (Conforme CT05)
-  const handleValidateCpf = (cpf: string) => {
-    setCustomerCpf(cpf);
-    // Se digitar 11 dígitos, simulamos que encontrou o cliente no programa de fidelidade
-    if (cpf.replace(/\D/g, '').length === 11) {
-      setIsFidelidadeApplied(true);
-    } else {
-      setIsFidelidadeApplied(false);
+  // Cálculo dos pontos que serão ganhos nesta compra (1 ponto a cada R$ 10,00)
+  const pointsToEarn = Math.floor(totalAmount / 10);
+
+  const handleCheckout = () => {
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    checkoutCart(); // Credita os pontos e limpa o carrinho
+    setOrderPlaced(true);
+    setTimeout(() => {
+      setOrderPlaced(false);
+      onClose();
+    }, 3000);
+  };
+
+  const handleRedeemItem = (itemName: string) => {
+    const success = redeemPoints(10);
+    if (success) {
+      // Adiciona o produto resgatado com preço 0 ao carrinho
+      addToCart({
+        id: `reward-${Date.now()}`,
+        name: `${itemName} (Resgate Fidelidade)`,
+        description: 'Item resgatado com pontos do Clube Raízes',
+        price: 0,
+        category: 'sobremesas',
+        image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=500&q=80'
+      });
+      setRedeemSuccessMsg(`Resgate de "${itemName}" realizado com sucesso!`);
+      setTimeout(() => setRedeemSuccessMsg(''), 4000);
     }
   };
 
-  // Desconto de 10% simulado para clientes cadastrados no Fidelidade (RF08 / CT05)
-  const discount = isFidelidadeApplied ? totalAmount * 0.1 : 0;
-  const finalAmount = totalAmount - discount;
-
-  const handleCheckout = (e: React.FormEvent) => {
-    e.preventDefault();
-    setOrderPlaced(true);
-    setTimeout(() => {
-      clearCart();
-      setOrderPlaced(false);
-      setCustomerName('');
-      setCustomerPhone('');
-      setCustomerCpf('');
-      setIsFidelidadeApplied(false);
-      onClose();
-    }, 2500);
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-md h-full flex flex-col justify-between shadow-2xl animate-in slide-in-from-right duration-300">
-        {/* Cabeçalho da Modal */}
-        <div className="p-4 bg-amber-800 text-white flex items-center justify-between">
-          <h2 className="text-lg font-bold">Seu Pedido</h2>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-amber-700 rounded-lg transition-colors cursor-pointer"
-          >
-            <X size={20} />
-          </button>
-        </div>
+    <>
+      <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm">
+        <div className="bg-white w-full max-w-md h-full flex flex-col justify-between shadow-2xl animate-in slide-in-from-right duration-300">
+          
+          {/* Cabeçalho */}
+          <div className="p-4 bg-amber-800 text-white flex items-center justify-between">
+            <h2 className="text-lg font-bold">Seu Pedido</h2>
+            <button
+              onClick={onClose}
+              className="p-1 hover:bg-amber-700 rounded-lg transition-colors cursor-pointer"
+            >
+              <X size={20} />
+            </button>
+          </div>
 
-        {/* Conteúdo do Carrinho */}
-        <div className="p-4 flex-1 overflow-y-auto">
-          {orderPlaced ? (
-            <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3">
-              <CheckCircle size={64} className="text-green-600 animate-bounce" />
-              <h3 className="text-xl font-bold text-gray-800">Pedido Confirmado!</h3>
-              <p className="text-sm text-gray-600">
-                {customerName ? `${customerName}, s` : 'S'}eu pedido foi enviado para a unidade <strong>{selectedUnit.name}</strong> e já está em preparação! {isFidelidadeApplied && 'Pontos de fidelidade creditados com sucesso! ⭐️'}
-              </p>
-            </div>
-          ) : cart.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center text-gray-500">
-              <p className="text-lg font-medium">Seu carrinho está vazio</p>
-              <p className="text-sm mt-1">Adicione algumas delícias nordestinas para começar!</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900">
-                📍 Retirada / Consumo em: <strong>{selectedUnit.name}</strong>
+          {/* Conteúdo do Carrinho */}
+          <div className="p-4 flex-1 overflow-y-auto space-y-4">
+            {orderPlaced ? (
+              <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3">
+                <CheckCircle size={64} className="text-green-600 animate-bounce" />
+                <h3 className="text-xl font-bold text-stone-800">Pedido Confirmado!</h3>
+                <p className="text-sm text-stone-600 leading-relaxed">
+                  {user?.name.split(' ')[0]}, seu pedido foi enviado para a unidade <strong>{selectedUnit.name}</strong> e já está em preparação!
+                </p>
+                <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 font-semibold">
+                  ⭐️ Você ganhou pontos no Clube Raízes! Saldo atualizado no perfil.
+                </div>
               </div>
+            ) : cart.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-center text-stone-500 py-20">
+                <p className="text-lg font-medium">Seu carrinho está vazio</p>
+                <p className="text-sm mt-1">Adicione algumas delícias nordestinas para começar!</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900">
+                  📍 Retirada em: <strong>{selectedUnit.name}</strong>
+                </div>
 
-              {cart.map(({ product, quantity }) => (
-                <div
-                  key={product.id}
-                  className="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100"
-                >
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-16 h-16 object-cover rounded-lg"
-                  />
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-sm text-gray-800 line-clamp-1">
-                      {product.name}
-                    </h4>
-                    <span className="text-xs text-amber-800 font-bold">
-                      R$ {(product.price * quantity).toFixed(2).replace('.', ',')}
+                {redeemSuccessMsg && (
+                  <div className="p-2.5 bg-green-50 border border-green-200 text-green-800 text-xs rounded-xl font-medium text-center">
+                    🎉 {redeemSuccessMsg}
+                  </div>
+                )}
+
+                {cart.map(({ product, quantity }) => (
+                  <div
+                    key={product.id}
+                    className="flex items-center justify-between gap-3 p-3 bg-stone-50 rounded-xl border border-stone-100"
+                  >
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-16 h-16 object-cover rounded-lg"
+                    />
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-sm text-stone-800 line-clamp-1">
+                        {product.name}
+                      </h4>
+                      <span className="text-xs text-amber-800 font-bold">
+                        {product.price === 0 ? <span className="text-green-700">GRÁTIS (Resgate)</span> : `R$ ${(product.price * quantity).toFixed(2).replace('.', ',')}`}
+                      </span>
+                      {product.price > 0 && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <button
+                            onClick={() => updateQuantity(product.id, quantity - 1)}
+                            className="p-1 bg-stone-200 hover:bg-stone-300 rounded-md transition-colors cursor-pointer"
+                          >
+                            <Minus size={14} />
+                          </button>
+                          <span className="text-xs font-bold px-1">{quantity}</span>
+                          <button
+                            onClick={() => updateQuantity(product.id, quantity + 1)}
+                            className="p-1 bg-stone-200 hover:bg-stone-300 rounded-md transition-colors cursor-pointer"
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => removeFromCart(product.id)}
+                      className="text-red-500 hover:text-red-700 p-1 transition-colors cursor-pointer"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Rodapé e Ação */}
+          {!orderPlaced && cart.length > 0 && (
+            <div className="p-4 border-t border-stone-200 bg-stone-50 space-y-3">
+              {user ? (
+                <div className="space-y-2">
+                  <div className="p-3 bg-amber-100/70 border border-amber-300 rounded-xl flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2 text-amber-950">
+                      <Award size={16} className="text-amber-800 shrink-0" />
+                      <span><strong>{user.name}</strong> • <strong>{user.points} pts</strong></span>
+                    </div>
+                    <span className="text-[11px] text-amber-900 font-medium">
+                      +{pointsToEarn} pts neste pedido
                     </span>
-                    <div className="flex items-center gap-2 mt-2">
+                  </div>
+
+                  {/* Vitrine de Resgate por Pontos */}
+                  <div className="p-3 bg-white border border-amber-200 rounded-xl space-y-2 shadow-sm">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
+                      <Gift size={14} />
+                      <span>Resgate Prêmios (10 pts cada):</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
                       <button
-                        onClick={() => updateQuantity(product.id, quantity - 1)}
-                        className="p-1 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors cursor-pointer"
+                        type="button"
+                        disabled={user.points < 10}
+                        onClick={() => handleRedeemItem('Bolo de Macaxeira')}
+                        className={`py-1.5 px-2 rounded-lg text-[11px] font-bold transition-colors cursor-pointer border ${
+                          user.points >= 10
+                            ? 'bg-amber-800 hover:bg-amber-900 text-white border-amber-800'
+                            : 'bg-stone-100 text-stone-400 border-stone-200 cursor-not-allowed'
+                        }`}
                       >
-                        <Minus size={14} />
+                        🍰 Bolo de Macaxeira
                       </button>
-                      <span className="text-xs font-bold px-1">{quantity}</span>
                       <button
-                        onClick={() => updateQuantity(product.id, quantity + 1)}
-                        className="p-1 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors cursor-pointer"
+                        type="button"
+                        disabled={user.points < 10}
+                        onClick={() => handleRedeemItem('Café Coado')}
+                        className={`py-1.5 px-2 rounded-lg text-[11px] font-bold transition-colors cursor-pointer border ${
+                          user.points >= 10
+                            ? 'bg-amber-800 hover:bg-amber-900 text-white border-amber-800'
+                            : 'bg-stone-100 text-stone-400 border-stone-200 cursor-not-allowed'
+                        }`}
                       >
-                        <Plus size={14} />
+                        ☕ Café Coado
                       </button>
                     </div>
+                    {user.points < 10 && (
+                      <p className="text-[10px] text-stone-500 text-center">
+                        Faltam {10 - user.points} pts para liberar o resgate.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 text-amber-900">
+                    <User size={16} className="shrink-0" />
+                    <span>Faça login para juntar pontos de fidelidade!</span>
                   </div>
                   <button
-                    onClick={() => removeFromCart(product.id)}
-                    className="text-red-500 hover:text-red-700 p-1 transition-colors cursor-pointer"
+                    onClick={() => setIsAuthModalOpen(true)}
+                    className="bg-amber-800 hover:bg-amber-900 text-white font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer text-[11px] shrink-0"
                   >
-                    <Trash2 size={18} />
+                    Entrar
                   </button>
                 </div>
-              ))}
+              )}
+
+              {/* Valores */}
+              <div className="space-y-1 pt-2 border-t border-stone-200 text-xs text-stone-600">
+                <div className="flex justify-between items-center text-base font-bold text-stone-900 pt-1">
+                  <span>Total do Pedido:</span>
+                  <span className="text-amber-800">
+                    R$ {totalAmount.toFixed(2).replace('.', ',')}
+                  </span>
+                </div>
+              </div>
+
+              {/* Botão de Finalização */}
+              <button
+                type="button"
+                onClick={handleCheckout}
+                className={`w-full font-bold py-3 rounded-xl transition-colors cursor-pointer shadow-md text-sm ${
+                  user
+                    ? 'bg-amber-800 hover:bg-amber-900 text-white'
+                    : 'bg-amber-700 hover:bg-amber-800 text-white'
+                }`}
+              >
+                {user ? 'Finalizar Pedido e Acumular Pontos' : 'Logar para Finalizar'}
+              </button>
+
+              <p className="text-[10px] text-stone-500 text-center flex items-center justify-center gap-1">
+                <ShieldCheck size={12} className="text-amber-800 shrink-0" />
+                Em conformidade com a LGPD (RF07). Dados protegidos.
+              </p>
             </div>
           )}
         </div>
-
-        {/* Rodapé, Checkout, Fidelidade (RF08/CT05) e LGPD (RF07/RNF04) */}
-        {!orderPlaced && cart.length > 0 && (
-          <form onSubmit={handleCheckout} className="p-4 border-t border-gray-200 bg-gray-50 space-y-3">
-            <div className="space-y-2">
-              <label className="block text-xs font-bold text-stone-700">Identificação & Clube de Fidelidade:</label>
-              
-              <input
-                type="text"
-                required
-                placeholder="Seu nome completo"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full px-3 py-2 text-xs bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-700"
-              />
-
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="CPF para Fidelidade (Opcional - Ex: 000...)"
-                  value={customerCpf}
-                  onChange={(e) => handleValidateCpf(e.target.value)}
-                  maxLength={14}
-                  className="w-full px-3 py-2 text-xs bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-700"
-                />
-                <div className="absolute right-2.5 top-2 text-amber-700">
-                  <Award size={16} />
-                </div>
-              </div>
-
-              {isFidelidadeApplied && (
-                <div className="p-2 bg-green-50 border border-green-200 text-green-800 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 animate-fade-in">
-                  <Award size={14} className="shrink-0 text-green-600" />
-                  <span>Cliente reconhecido! 10% de desconto aplicado pelo Clube Raízes.</span>
-                </div>
-              )}
-
-              <input
-                type="tel"
-                required
-                placeholder="WhatsApp / Telefone para aviso"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                className="w-full px-3 py-2 text-xs bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-700"
-              />
-
-              <p className="text-[10px] text-stone-500 leading-tight flex items-center gap-1">
-                <ShieldCheck size={12} className="text-amber-800 shrink-0" />
-                Em conformidade com a LGPD (RF07), seus dados são protegidos e usados apenas para o pedido e pontos de fidelidade.
-              </p>
-            </div>
-
-            {/* Resumo de Valores */}
-            <div className="space-y-1 pt-2 border-t border-gray-200 text-xs text-stone-600">
-              <div className="flex justify-between">
-                <span>Subtotal:</span>
-                <span>R$ {totalAmount.toFixed(2).replace('.', ',')}</span>
-              </div>
-              {isFidelidadeApplied && (
-                <div className="flex justify-between text-green-700 font-semibold">
-                  <span>Desconto Fidelidade (10%):</span>
-                  <span>- R$ {discount.toFixed(2).replace('.', ',')}</span>
-                </div>
-              )}
-              <div className="flex justify-between items-center text-base font-bold text-stone-900 pt-1">
-                <span>Total:</span>
-                <span className="text-amber-800">
-                  R$ {finalAmount.toFixed(2).replace('.', ',')}
-                </span>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 rounded-xl transition-colors cursor-pointer shadow-md text-sm"
-            >
-              Finalizar Pedido e Resgatar Pontos
-            </button>
-          </form>
-        )}
       </div>
-    </div>
+
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+    </>
   );
 };

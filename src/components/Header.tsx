@@ -78,7 +78,6 @@ export function Header({ onOpenCart }: HeaderProps) {
                     }`}
                   >
                     <span>{unit.name}</span>
-                    <span className="text-[10px] opacity-75 font-normal">{unit.city}</span>
                   </button>
                 ))}
               </div>
@@ -129,7 +128,7 @@ export function Header({ onOpenCart }: HeaderProps) {
               className="flex items-center gap-2 bg-amber-900/80 hover:bg-amber-900 border border-amber-700 px-4 py-2 rounded-xl text-xs font-semibold text-amber-100 transition-all cursor-pointer"
             >
               <User size={15} className="text-amber-300" />
-              <span>Entrar / Cadastrar</span>
+              <span>Login</span>
             </button>
           )}
 
