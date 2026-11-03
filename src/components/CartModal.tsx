@@ -30,10 +30,6 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
 
     checkoutCart(); // Credita os pontos e limpa o carrinho
     setOrderPlaced(true);
-    setTimeout(() => {
-      setOrderPlaced(false);
-      onClose();
-    }, 3000);
   };
 
   const handleRedeemItem = (itemName: string) => {
@@ -235,12 +231,12 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
                     : 'bg-amber-700 hover:bg-amber-800 text-white'
                 }`}
               >
-                {user ? 'Finalizar Pedido e Acumular Pontos' : 'Logar para Finalizar'}
+                {user ? 'Finalizar Pedido!' : 'Entre para Finalizar!'}
               </button>
 
               <p className="text-[10px] text-stone-500 text-center flex items-center justify-center gap-1">
                 <ShieldCheck size={12} className="text-amber-800 shrink-0" />
-                Em conformidade com a LGPD (RF07). Dados protegidos.
+                Dados protegidos em conformidade com a LGPD.
               </p>
             </div>
           )}

@@ -24,7 +24,11 @@ export function Header({ onOpenCart }: HeaderProps) {
         <div className="flex items-center gap-3 w-full md:w-auto justify-between">
           <div className="flex items-center gap-2">
             <div className="bg-amber-800 p-2 rounded-xl text-amber-200">
-              <span className="text-xl font-bold">🌿</span>
+              <img 
+                src="/products/Logo.png" 
+                alt="Logotipo Raízes do Nordeste" 
+                className="w-10 h-10 object-cover rounded-lg" 
+              />
             </div>
             <div>
               <h1 className="font-black text-lg md:text-xl tracking-tight text-white leading-none">
