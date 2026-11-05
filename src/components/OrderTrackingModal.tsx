@@ -1,19 +1,27 @@
 import React from 'react';
 import { X, Clock, ChefHat, PackageCheck, ShoppingBag } from 'lucide-react';
 
+interface Order {
+  id: string;
+  items: Array<{ name: string; quantity: number; price: number }>;
+  total: number;
+  status: 'Recebido' | 'Em Preparação' | 'Pronto';
+  createdAt: string;
+}
+
 interface OrderTrackingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  order: {
-    id: string;
-    items: Array<{ name: string; quantity: number; price: number }>;
-    total: number;
-    status: 'Recebido' | 'Em Preparação' | 'Pronto';
-    createdAt: string;
-  } | null;
+  order: Order | null;
+  onUpdateStatus?: (newStatus: 'Recebido' | 'Em Preparação' | 'Pronto') => void;
 }
 
-export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, onClose, order }) => {
+export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  order, 
+  onUpdateStatus 
+}) => {
   if (!isOpen) return null;
 
   // Se não houver pedido ativo, exibe um estado vazio amigável
@@ -70,7 +78,7 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, 
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-5">
           
           {/* Linha do Tempo de Status (Stepper) */}
           <div className="space-y-4">
@@ -103,7 +111,7 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, 
           {/* Resumo do Pedido */}
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-2">
             <p className="text-xs font-bold text-amber-900 border-b border-amber-200/60 pb-1.5">Itens do Pedido</p>
-            <div className="max-h-32 overflow-y-auto space-y-1.5 pr-1">
+            <div className="max-h-28 overflow-y-auto space-y-1.5 pr-1">
               {order.items.map((item, idx) => (
                 <div key={idx} className="flex justify-between text-xs text-stone-700">
                   <span>{item.quantity}x {item.name}</span>
@@ -117,8 +125,53 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, 
             </div>
           </div>
 
+          {/* 🧪 PAINEL DE QA / TESTE PARA ALTERAR STATUS */}
+          {onUpdateStatus && (
+            <div className="p-3 bg-stone-100 border border-stone-300 rounded-xl space-y-2">
+              <span className="font-bold text-stone-800 text-[11px] block">
+                🧪 Painel de Teste (Simular Mudança de Status):
+              </span>
+              <div className="grid grid-cols-3 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => onUpdateStatus('Recebido')}
+                  className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer border ${
+                    order.status === 'Recebido'
+                      ? 'bg-amber-800 text-white border-amber-800'
+                      : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'
+                  }`}
+                >
+                  Recebido
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onUpdateStatus('Em Preparação')}
+                  className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer border ${
+                    order.status === 'Em Preparação'
+                      ? 'bg-amber-800 text-white border-amber-800'
+                      : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'
+                  }`}
+                >
+                  Em Preparo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onUpdateStatus('Pronto')}
+                  className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer border ${
+                    order.status === 'Pronto'
+                      ? 'bg-emerald-700 text-white border-emerald-700'
+                      : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'
+                  }`}
+                >
+                  Pronto
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Botão Fechar */}
           <button
+            type="button"
             onClick={onClose}
             className="w-full py-3 bg-stone-800 hover:bg-stone-900 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer shadow-md"
           >

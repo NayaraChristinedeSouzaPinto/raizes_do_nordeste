@@ -8,6 +8,7 @@ import { OrderTrackingModal } from './OrderTrackingModal';
 
 interface HeaderProps {
   onOpenCart: () => void;
+  onOpenTracking?: () => void; // 👈 Adicionado para sincronizar com o App.tsx
   activeOrder?: {
     id: string;
     items: Array<{ name: string; quantity: number; price: number }>;
@@ -17,7 +18,7 @@ interface HeaderProps {
   } | null;
 }
 
-export function Header({ onOpenCart, activeOrder }: HeaderProps) {
+export function Header({ onOpenCart, onOpenTracking, activeOrder }: HeaderProps) {
   const { cartCount, selectedUnit, setSelectedUnit, units } = useCart();
   const { user, logout } = useAuth();
   
@@ -26,6 +27,15 @@ export function Header({ onOpenCart, activeOrder }: HeaderProps) {
   const [isTrackingModalOpen, setIsTrackingModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isUnitDropdownOpen, setIsUnitDropdownOpen] = useState(false);
+
+  // Função unificada para abrir o rastreio (seja via prop do App ou modal interno)
+  const handleOpenTracking = () => {
+    if (onOpenTracking) {
+      onOpenTracking();
+    } else {
+      setIsTrackingModalOpen(true);
+    }
+  };
 
   // Ícone dinâmico baseado no status do pedido
   const getStatusIcon = (status: string) => {
@@ -59,18 +69,31 @@ export function Header({ onOpenCart, activeOrder }: HeaderProps) {
             </div>
           </div>
 
-          {/* Botão Carrinho Mobile */}
-          <button
-            onClick={onOpenCart}
-            className="md:hidden relative bg-amber-800 hover:bg-amber-700 p-2.5 rounded-xl text-white transition-colors cursor-pointer flex items-center gap-2"
-          >
-            <ShoppingBag size={20} />
-            {cartCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 bg-amber-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-amber-950">
-                {cartCount}
-              </span>
+          {/* Botões Mobile (Rastreio do Pedido Ativo + Carrinho) */}
+          <div className="flex items-center gap-2 md:hidden">
+            {activeOrder && (
+              <button
+                onClick={handleOpenTracking}
+                className="bg-amber-900 border border-amber-600 p-2.5 rounded-xl text-amber-100 flex items-center gap-1.5 animate-pulse cursor-pointer"
+                title="Acompanhar Pedido"
+              >
+                {getStatusIcon(activeOrder.status)}
+                <span className="text-[10px] font-bold">#{activeOrder.id}</span>
+              </button>
             )}
-          </button>
+
+            <button
+              onClick={onOpenCart}
+              className="relative bg-amber-800 hover:bg-amber-700 p-2.5 rounded-xl text-white transition-colors cursor-pointer flex items-center gap-2"
+            >
+              <ShoppingBag size={20} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-amber-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-amber-950">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Seletor de Unidade */}
@@ -113,10 +136,10 @@ export function Header({ onOpenCart, activeOrder }: HeaderProps) {
         {/* Ações (Autenticação / Status do Pedido / Carrinho Desktop) */}
         <div className="hidden md:flex items-center gap-3">
           
-          {/* BOTÃO DE STATUS DO PEDIDO ATIVO (Aparece se houver pedido) */}
+          {/* BOTÃO DE STATUS DO PEDIDO ATIVO (Desktop) */}
           {activeOrder && (
             <button
-              onClick={() => setIsTrackingModalOpen(true)}
+              onClick={handleOpenTracking}
               className="flex items-center gap-2 bg-amber-900 hover:bg-amber-800 border border-amber-600 px-3.5 py-2 rounded-xl text-xs font-semibold text-amber-100 transition-all cursor-pointer shadow-sm animate-pulse"
             >
               {getStatusIcon(activeOrder.status)}
@@ -186,7 +209,7 @@ export function Header({ onOpenCart, activeOrder }: HeaderProps) {
             className="relative bg-amber-700 hover:bg-amber-600 px-4 py-2 rounded-xl text-white font-semibold transition-colors cursor-pointer flex items-center gap-2 shadow-sm text-xs"
           >
             <ShoppingBag size={16} />
-            <span>Meu Pedido</span>
+            <span>Carrinho</span>
             {cartCount > 0 && (
               <span className="bg-white text-amber-950 text-[10px] font-extrabold px-1.5 py-0.5 rounded-full">
                 {cartCount}

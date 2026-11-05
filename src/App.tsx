@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { Header } from './components/Header';
 import { ProductCard } from './components/ProductCard';
 import { CartModal } from './components/CartModal';
+import { OrderTrackingModal } from './components/OrderTrackingModal';
 import { PRODUCTS_MOCK } from './mocks/products';
 import { CartProvider, useCart } from './context/CartContext';
 import { LgpdBanner } from './components/LgpdBanner';
 import { AuthProvider } from './context/AuthContext';
 
-// Define o tipo para o pedido ativo
 export interface Order {
   id: string;
   items: Array<{ name: string; quantity: number; price: number }>;
@@ -16,11 +16,8 @@ export interface Order {
   createdAt: string;
 }
 
-// Componente para o conteúdo principal consumindo o contexto do carrinho
 function MainContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>('todos');
-  
-  // Resgata a unidade ativa selecionada no Header
   const { selectedUnit } = useCart();
 
   const categories = [
@@ -32,17 +29,14 @@ function MainContent() {
     { id: 'sobremesas', label: 'Sobremesas' },
   ];
 
-  // Filtra por unidade (availableUnits) e por categoria simultaneamente
   const filteredProducts = PRODUCTS_MOCK.filter(product => {
     const matchesUnit = !product.availableUnits || product.availableUnits.includes(selectedUnit.id);
     const matchesCategory = selectedCategory === 'todos' || product.category === selectedCategory;
-
     return matchesUnit && matchesCategory;
   });
 
   return (
     <div className="min-h-screen bg-[#fcf8f2] text-stone-900 pb-16">
-      {/* Banner */}
       <section className="bg-amber-950 text-amber-100 py-16 px-4 shadow-md mb-10 border-b-4 border-amber-900">
         <div className="max-w-5xl mx-auto text-center space-y-4">
           <span className="inline-block bg-amber-800 text-amber-200 text-xs md:text-sm font-bold px-4 py-1.5 rounded-full shadow-inner tracking-wide uppercase">
@@ -57,9 +51,7 @@ function MainContent() {
         </div>
       </section>
 
-      {/* Conteúdo Principal */}
       <main className="max-w-6xl mx-auto px-4">
-        {/* Filtro de Categorias */}
         <div className="flex items-center justify-start md:justify-center gap-3 overflow-x-auto pt-2 pb-6 mb-8 px-2">
           {categories.map((cat) => (
             <button
@@ -76,7 +68,6 @@ function MainContent() {
           ))}
         </div>
 
-        {/* Grid de Produtos */}
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredProducts.map((product) => (
@@ -96,22 +87,33 @@ function MainContent() {
   );
 }
 
-// Componente interno que conecta o Header, CartModal e o estado de Pedido Ativo
 function AppContent() {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isTrackingOpen, setIsTrackingOpen] = useState(false);
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
 
   return (
     <div className="min-h-screen bg-[#fcf8f2] flex flex-col relative">
       <Header 
         onOpenCart={() => setIsCartOpen(true)} 
+        onOpenTracking={() => setIsTrackingOpen(true)}
         activeOrder={activeOrder}
       />
       <MainContent />
       <CartModal 
         isOpen={isCartOpen} 
         onClose={() => setIsCartOpen(false)} 
-        onCheckoutSuccess={(newOrder) => setActiveOrder(newOrder)}
+        onCheckoutSuccess={(newOrder) => {
+          setActiveOrder(newOrder);
+        }}
+      />
+      <OrderTrackingModal
+        isOpen={isTrackingOpen}
+        onClose={() => setIsTrackingOpen(false)}
+        order={activeOrder}
+        onUpdateStatus={(newStatus) => {
+          setActiveOrder(prev => prev ? { ...prev, status: newStatus } : null);
+        }}
       />
       <LgpdBanner />
     </div>
