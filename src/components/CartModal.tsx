@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Trash2, Plus, Minus, CheckCircle, Award, ShieldCheck, User, Gift } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -7,19 +7,39 @@ import { AuthModal } from './AuthModal';
 interface CartModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onCheckoutSuccess?: (order: {
+    id: string;
+    items: Array<{ name: string; quantity: number; price: number }>;
+    total: number;
+    status: 'Recebido' | 'Em Preparação' | 'Pronto';
+    createdAt: string;
+  }) => void;
 }
 
-export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
-  const { cart, selectedUnit, updateQuantity, removeFromCart, totalAmount, checkoutCart, addToCart } = useCart();
-  const { user, redeemPoints } = useAuth();
+export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckoutSuccess }) => {
+  const { cart, selectedUnit, updateQuantity, removeFromCart, totalAmount, clearCart, addToCart } = useCart();
+  const { user, processCheckoutPoints } = useAuth();
   
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [redeemSuccessMsg, setRedeemSuccessMsg] = useState('');
 
+  // 1. Sempre que o carrinho mudar (novos itens adicionados), reseta a tela de pedido finalizado
+  useEffect(() => {
+    if (cart.length > 0) {
+      setOrderPlaced(false);
+    }
+  }, [cart]);
+
   if (!isOpen) return null;
 
-  // Cálculo dos pontos que serão ganhos nesta compra (1 ponto a cada R$ 10,00)
+  // Function para fechar limpando a tela de confirmação
+  const handleCloseModal = () => {
+    setOrderPlaced(false);
+    onClose();
+  };
+
+  const hasRewardInCart = cart.some(item => item.product.id.startsWith('reward-'));
   const pointsToEarn = Math.floor(totalAmount / 10);
 
   const handleCheckout = () => {
@@ -28,25 +48,53 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
       return;
     }
 
-    checkoutCart(); // Credita os pontos e limpa o carrinho
-    setOrderPlaced(true);
+    const orderData = {
+      id: Math.floor(1000 + Math.random() * 9000).toString(),
+      items: cart.map(item => ({
+        name: item.product.name,
+        quantity: item.quantity,
+        price: item.product.price
+      })),
+      total: totalAmount,
+      status: 'Recebido' as const,
+      createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    // Processa os pontos de forma unificada
+    processCheckoutPoints(totalAmount, hasRewardInCart);
+
+    // Envia o pedido ativo para o componente principal (App)
+    if (onCheckoutSuccess) {
+      onCheckoutSuccess(orderData);
+    }
+
+    clearCart(); // Limpa os itens do carrinho
+    setOrderPlaced(true); // Exibe a tela de confirmação
   };
 
   const handleRedeemItem = (itemName: string) => {
-    const success = redeemPoints(10);
-    if (success) {
-      // Adiciona o produto resgatado com preço 0 ao carrinho
-      addToCart({
-        id: `reward-${Date.now()}`,
-        name: `${itemName} (Resgate Fidelidade)`,
-        description: 'Item resgatado com pontos do Clube Raízes',
-        price: 0,
-        category: 'sobremesas',
-        image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=500&q=80'
-      });
-      setRedeemSuccessMsg(`Resgate de "${itemName}" realizado com sucesso!`);
+    if (!user || user.points < 10) return;
+
+    if (hasRewardInCart) {
+      setRedeemSuccessMsg('Limite de 1 item de resgate por pedido atingido!');
       setTimeout(() => setRedeemSuccessMsg(''), 4000);
+      return;
     }
+
+    const rewardImage = itemName.includes('Bolo') 
+      ? '/products/Bolo_de_Macaxeira.png' 
+      : '/products/Cafe_Coado.png';
+
+    addToCart({
+      id: `reward-${Date.now()}`,
+      name: `${itemName}`,
+      description: 'Item resgatado com pontos do Clube Raízes',
+      price: 0,
+      category: 'sobremesas',
+      image: rewardImage
+    });
+    setRedeemSuccessMsg(`"${itemName}" adicionado como resgate!`);
+    setTimeout(() => setRedeemSuccessMsg(''), 4000);
   };
 
   return (
@@ -54,11 +102,11 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
       <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm">
         <div className="bg-white w-full max-w-md h-full flex flex-col justify-between shadow-2xl animate-in slide-in-from-right duration-300">
           
-          {/* Cabeçalho */}
+          {/* Cabeçalho com handleCloseModal */}
           <div className="p-4 bg-amber-800 text-white flex items-center justify-between">
             <h2 className="text-lg font-bold">Seu Pedido</h2>
             <button
-              onClick={onClose}
+              onClick={handleCloseModal}
               className="p-1 hover:bg-amber-700 rounded-lg transition-colors cursor-pointer"
             >
               <X size={20} />
@@ -75,7 +123,7 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
                   {user?.name.split(' ')[0]}, seu pedido foi enviado para a unidade <strong>{selectedUnit.name}</strong> e já está em preparação!
                 </p>
                 <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 font-semibold">
-                  ⭐️ Você ganhou pontos no Clube Raízes! Saldo atualizado no perfil.
+                  ⭐️ Saldo de pontos atualizado no seu perfil com sucesso!
                 </div>
               </div>
             ) : cart.length === 0 ? (
@@ -110,7 +158,7 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
                         {product.name}
                       </h4>
                       <span className="text-xs text-amber-800 font-bold">
-                        {product.price === 0 ? <span className="text-green-700">GRÁTIS (Resgate)</span> : `R$ ${(product.price * quantity).toFixed(2).replace('.', ',')}`}
+                        {product.price === 0 ? <span className="text-green-700">GRÁTIS</span> : `R$ ${(product.price * quantity).toFixed(2).replace('.', ',')}`}
                       </span>
                       {product.price > 0 && (
                         <div className="flex items-center gap-2 mt-2">
@@ -159,17 +207,24 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
 
                   {/* Vitrine de Resgate por Pontos */}
                   <div className="p-3 bg-white border border-amber-200 rounded-xl space-y-2 shadow-sm">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
-                      <Gift size={14} />
-                      <span>Resgate Prêmios (10 pts cada):</span>
+                    <div className="flex items-center justify-between text-xs font-bold text-amber-900">
+                      <div className="flex items-center gap-1.5">
+                        <Gift size={14} />
+                        <span>Resgatar Prêmio (10 pts):</span>
+                      </div>
+                      {hasRewardInCart && (
+                        <span className="text-[10px] text-green-700 bg-green-50 px-1.5 py-0.5 rounded border border-green-200">
+                          Resgate aplicado
+                        </span>
+                      )}
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
-                        disabled={user.points < 10}
+                        disabled={user.points < 10 || hasRewardInCart}
                         onClick={() => handleRedeemItem('Bolo de Macaxeira')}
                         className={`py-1.5 px-2 rounded-lg text-[11px] font-bold transition-colors cursor-pointer border ${
-                          user.points >= 10
+                          user.points >= 10 && !hasRewardInCart
                             ? 'bg-amber-800 hover:bg-amber-900 text-white border-amber-800'
                             : 'bg-stone-100 text-stone-400 border-stone-200 cursor-not-allowed'
                         }`}
@@ -178,10 +233,10 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
                       </button>
                       <button
                         type="button"
-                        disabled={user.points < 10}
+                        disabled={user.points < 10 || hasRewardInCart}
                         onClick={() => handleRedeemItem('Café Coado')}
                         className={`py-1.5 px-2 rounded-lg text-[11px] font-bold transition-colors cursor-pointer border ${
-                          user.points >= 10
+                          user.points >= 10 && !hasRewardInCart
                             ? 'bg-amber-800 hover:bg-amber-900 text-white border-amber-800'
                             : 'bg-stone-100 text-stone-400 border-stone-200 cursor-not-allowed'
                         }`}
@@ -189,11 +244,6 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
                         ☕ Café Coado
                       </button>
                     </div>
-                    {user.points < 10 && (
-                      <p className="text-[10px] text-stone-500 text-center">
-                        Faltam {10 - user.points} pts para liberar o resgate.
-                      </p>
-                    )}
                   </div>
                 </div>
               ) : (

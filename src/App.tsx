@@ -7,6 +7,15 @@ import { CartProvider, useCart } from './context/CartContext';
 import { LgpdBanner } from './components/LgpdBanner';
 import { AuthProvider } from './context/AuthContext';
 
+// Define o tipo para o pedido ativo
+export interface Order {
+  id: string;
+  items: Array<{ name: string; quantity: number; price: number }>;
+  total: number;
+  status: 'Recebido' | 'Em Preparação' | 'Pronto';
+  createdAt: string;
+}
+
 // Componente para o conteúdo principal consumindo o contexto do carrinho
 function MainContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>('todos');
@@ -87,18 +96,33 @@ function MainContent() {
   );
 }
 
-export function App() {
+// Componente interno que conecta o Header, CartModal e o estado de Pedido Ativo
+function AppContent() {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [activeOrder, setActiveOrder] = useState<Order | null>(null);
 
+  return (
+    <div className="min-h-screen bg-[#fcf8f2] flex flex-col relative">
+      <Header 
+        onOpenCart={() => setIsCartOpen(true)} 
+        activeOrder={activeOrder}
+      />
+      <MainContent />
+      <CartModal 
+        isOpen={isCartOpen} 
+        onClose={() => setIsCartOpen(false)} 
+        onCheckoutSuccess={(newOrder) => setActiveOrder(newOrder)}
+      />
+      <LgpdBanner />
+    </div>
+  );
+}
+
+export function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <div className="min-h-screen bg-[#fcf8f2] flex flex-col relative">
-          <Header onOpenCart={() => setIsCartOpen(true)} />
-          <MainContent />
-          <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-          <LgpdBanner />
-        </div>
+        <AppContent />
       </CartProvider>
     </AuthProvider>
   );

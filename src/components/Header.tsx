@@ -1,20 +1,41 @@
 import { useState } from 'react';
-import { ShoppingBag, MapPin, User, LogOut, Award } from 'lucide-react';
+import { ShoppingBag, MapPin, User, LogOut, Award, ChefHat, Clock, PackageCheck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { AuthModal } from './AuthModal';
+import { ProfileModal } from './ProfileModal';
+import { OrderTrackingModal } from './OrderTrackingModal';
 
 interface HeaderProps {
   onOpenCart: () => void;
+  activeOrder?: {
+    id: string;
+    items: Array<{ name: string; quantity: number; price: number }>;
+    total: number;
+    status: 'Recebido' | 'Em Preparação' | 'Pronto';
+    createdAt: string;
+  } | null;
 }
 
-export function Header({ onOpenCart }: HeaderProps) {
+export function Header({ onOpenCart, activeOrder }: HeaderProps) {
   const { cartCount, selectedUnit, setSelectedUnit, units } = useCart();
   const { user, logout } = useAuth();
   
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isTrackingModalOpen, setIsTrackingModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isUnitDropdownOpen, setIsUnitDropdownOpen] = useState(false);
+
+  // Ícone dinâmico baseado no status do pedido
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'Recebido': return <Clock size={14} className="text-amber-300 animate-pulse" />;
+      case 'Em Preparação': return <ChefHat size={14} className="text-amber-300 animate-bounce" />;
+      case 'Pronto': return <PackageCheck size={14} className="text-green-300" />;
+      default: return <Clock size={14} />;
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-amber-950 text-amber-50 shadow-md border-b border-amber-900">
@@ -52,7 +73,7 @@ export function Header({ onOpenCart }: HeaderProps) {
           </button>
         </div>
 
-        {/* Seletor de Unidade (Multicanalidade por Filial) */}
+        {/* Seletor de Unidade */}
         <div className="relative w-full md:w-auto flex items-center justify-center gap-2">
           <div className="relative w-full md:w-auto">
             <button
@@ -89,8 +110,20 @@ export function Header({ onOpenCart }: HeaderProps) {
           </div>
         </div>
 
-        {/* Ações (Autenticação / Conta / Carrinho Desktop) */}
+        {/* Ações (Autenticação / Status do Pedido / Carrinho Desktop) */}
         <div className="hidden md:flex items-center gap-3">
+          
+          {/* BOTÃO DE STATUS DO PEDIDO ATIVO (Aparece se houver pedido) */}
+          {activeOrder && (
+            <button
+              onClick={() => setIsTrackingModalOpen(true)}
+              className="flex items-center gap-2 bg-amber-900 hover:bg-amber-800 border border-amber-600 px-3.5 py-2 rounded-xl text-xs font-semibold text-amber-100 transition-all cursor-pointer shadow-sm animate-pulse"
+            >
+              {getStatusIcon(activeOrder.status)}
+              <span>Pedido #{activeOrder.id} - <strong className="text-white">{activeOrder.status}</strong></span>
+            </button>
+          )}
+
           {user ? (
             <div className="relative">
               <button
@@ -114,6 +147,17 @@ export function Header({ onOpenCart }: HeaderProps) {
                     <p className="text-[11px] font-bold text-white">{user.name}</p>
                     <p className="text-[10px] text-amber-300">CPF: {user.cpf}</p>
                   </div>
+                  
+                  <button
+                    onClick={() => {
+                      setIsProfileModalOpen(true);
+                      setIsDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-xs text-amber-200 hover:bg-amber-900/60 flex items-center gap-2 cursor-pointer"
+                  >
+                    <User size={14} /> Meu Perfil
+                  </button>
+
                   <button
                     onClick={() => {
                       logout();
@@ -153,8 +197,14 @@ export function Header({ onOpenCart }: HeaderProps) {
 
       </div>
 
-      {/* Modal de Login / Cadastro */}
+      {/* Modais */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
+      <OrderTrackingModal 
+        isOpen={isTrackingModalOpen} 
+        onClose={() => setIsTrackingModalOpen(false)} 
+        order={activeOrder || null}
+      />
     </header>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Phone, Mail, Award, ShieldCheck, CheckCircle } from 'lucide-react';
+import { X, Award, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface ProfileModalProps {
@@ -7,138 +7,153 @@ interface ProfileModalProps {
   onClose: () => void;
 }
 
+// Máscara para WhatsApp / Telefone: (00) 00000-0000
+const formatPhone = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 2) return digits ? `(${digits}` : '';
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+};
+
 export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
   const { user, updateProfile } = useAuth();
-  
+
   const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const [phone, setPhone] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     if (user) {
-      setName(user.name);
-      setPhone(user.phone);
-      setEmail(user.email);
+      setName(user.name || '');
+      setEmail(user.email || '');
+      setPhone(user.phone ? formatPhone(user.phone) : '');
     }
+    setShowSuccess(false);
   }, [user, isOpen]);
 
   if (!isOpen || !user) return null;
 
-  const formatPhoneNumber = (value: string) => {
-    const numbersOnly = value.replace(/\D/g, '').slice(0, 11);
-    if (numbersOnly.length <= 2) return numbersOnly;
-    if (numbersOnly.length <= 7) return `(${numbersOnly.slice(0, 2)}) ${numbersOnly.slice(2)}`;
-    return `(${numbersOnly.slice(0, 2)}) ${numbersOnly.slice(2, 7)}-${numbersOnly.slice(7)}`;
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPhone(formatPhone(e.target.value));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSave = (e: React.MouseEvent<HTMLButtonElement> | React.FormEvent) => {
     e.preventDefault();
-    updateProfile({ name, phone, email });
-    setSuccessMsg('Dados atualizados com sucesso!');
-    setTimeout(() => {
-      setSuccessMsg('');
-      onClose();
-    }, 2000);
+    
+    updateProfile({
+      name,
+      email: email.trim().toLowerCase(),
+      phone,
+    });
+    
+    // Alerta direto e confiável
+    alert('Dados atualizados com sucesso!');
+    
+    // Fecha o modal na hora
+    onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         
-        <div className="bg-amber-900 text-white p-4 flex items-center justify-between">
-          <h3 className="font-bold text-base flex items-center gap-2">
-            <User size={18} className="text-amber-300" />
-            Meu Perfil & Fidelidade
-          </h3>
-          <button onClick={onClose} className="p-1 hover:bg-amber-800 rounded-lg transition-colors cursor-pointer">
+        {/* Cabeçalho */}
+        <div className="p-4 bg-amber-800 text-white flex items-center justify-between">
+          <h2 className="text-lg font-bold">Meu Perfil</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1 hover:bg-amber-700 rounded-lg transition-colors cursor-pointer"
+          >
             <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {successMsg && (
-            <div className="p-3 bg-green-50 border border-green-200 text-green-800 text-xs rounded-xl font-medium flex items-center gap-2">
-              <CheckCircle size={16} />
-              <span>{successMsg}</span>
+        {/* Conteúdo */}
+        <div className="p-6 space-y-4">
+          
+          {/* Confirmação Visual de Sucesso */}
+          {showSuccess && (
+            <div className="p-3 bg-green-100 border border-green-300 text-green-900 text-xs rounded-xl font-bold flex items-center justify-center gap-2">
+              <CheckCircle size={18} className="text-green-600 shrink-0" />
+              <span>Dados atualizados com sucesso!</span>
             </div>
           )}
 
-          {/* Card de Fidelidade */}
-          <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 flex items-center justify-between">
-            <div className="flex items-center gap-2.5 text-amber-950">
-              <Award size={22} className="text-amber-800" />
-              <div>
-                <p className="text-xs font-bold">Clube Raízes de Fidelidade</p>
-                <p className="text-[11px] text-stone-600">1 ponto a cada R$ 10 gastos</p>
-              </div>
+          {/* Saldo de Pontos */}
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between">
+            <div className="flex items-center gap-2 text-amber-900">
+              <Award size={20} className="text-amber-800" />
+              <span className="text-xs font-bold">Clube Raízes de Fidelidade</span>
             </div>
-            <span className="bg-amber-800 text-white font-bold px-2.5 py-1 rounded-lg text-xs">
-              {user.points} pts
-            </span>
+            <span className="text-sm font-black text-amber-800">{user.points} pts</span>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-stone-700 mb-1">Nome Completo:</label>
+          {/* CPF (Somente Leitura) */}
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-stone-700">CPF</label>
             <input
               type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 text-xs text-stone-900 bg-stone-50 border border-stone-300 rounded-xl focus:ring-2 focus:ring-amber-700"
+              disabled
+              value={user.cpf}
+              className="w-full px-3 py-2 bg-stone-100 border border-stone-200 rounded-xl text-xs text-stone-500 font-mono cursor-not-allowed"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block text-xs font-bold text-stone-700 mb-1">CPF (Inalterável):</label>
-              <input
-                type="text"
-                disabled
-                value={user.cpf}
-                className="w-full px-3 py-2 text-xs text-stone-500 bg-stone-200 border border-stone-300 rounded-xl cursor-not-allowed"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-stone-700 mb-1">WhatsApp:</label>
-              <div className="relative flex items-center">
-                <Phone size={13} className="absolute left-2.5 text-stone-400" />
-                <input
-                  type="text"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(formatPhoneNumber(e.target.value))}
-                  className="w-full pl-8 pr-2 py-2 text-xs text-stone-900 bg-stone-50 border border-stone-300 rounded-xl focus:ring-2 focus:ring-amber-700"
-                />
-              </div>
-            </div>
+          {/* Nome */}
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-stone-700">Nome Completo</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (showSuccess) setShowSuccess(false);
+              }}
+              className="w-full px-3 py-2 bg-white border border-stone-300 rounded-xl text-xs text-stone-800 focus:outline-none focus:border-amber-800"
+            />
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-stone-700 mb-1">E-mail:</label>
-            <div className="relative flex items-center">
-              <Mail size={15} className="absolute left-3 text-stone-400" />
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs text-stone-900 bg-stone-50 border border-stone-300 rounded-xl focus:ring-2 focus:ring-amber-700"
-              />
-            </div>
+          {/* E-mail */}
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-stone-700">E-mail</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (showSuccess) setShowSuccess(false);
+              }}
+              className="w-full px-3 py-2 bg-white border border-stone-300 rounded-xl text-xs text-stone-800 focus:outline-none focus:border-amber-800"
+            />
           </div>
 
+          {/* WhatsApp com Máscara */}
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-stone-700">WhatsApp</label>
+            <input
+              type="text"
+              value={phone}
+              onChange={(e) => {
+                handlePhoneChange(e);
+                if (showSuccess) setShowSuccess(false);
+              }}
+              placeholder="(81) 99999-9999"
+              maxLength={15}
+              className="w-full px-3 py-2 bg-white border border-stone-300 rounded-xl text-xs text-stone-800 font-mono focus:outline-none focus:border-amber-800"
+            />
+          </div>
+
+          {/* Botão Salvar */}
           <button
-            type="submit"
-            className="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-2.5 rounded-xl transition-colors cursor-pointer shadow-md text-xs mt-2"
+            type="button"
+            onClick={handleSave}
+            className="w-full py-3 bg-amber-800 hover:bg-amber-900 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer shadow-md mt-2"
           >
             Salvar Alterações
           </button>
-        </form>
-
-        <div className="bg-stone-50 px-6 py-3 border-t border-stone-100 flex items-center justify-center gap-1.5 text-[10px] text-stone-500">
-          <ShieldCheck size={13} className="text-amber-800" />
-          <span>Dados protegidos em conformidade com a LGPD.</span>
         </div>
       </div>
     </div>
