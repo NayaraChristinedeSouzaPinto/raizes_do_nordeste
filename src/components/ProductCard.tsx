@@ -40,10 +40,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           )}
         </div>
 
-        {/* Título com tom marrom escuro elegante */}
+        {/* Título */}
         <h3 className="font-extrabold text-amber-950 text-xl mb-2">{product.name}</h3>
         
-        {/* Descrição com tom terroso suave */}
+        {/* Descrição */}
         <p className="text-stone-700 text-sm leading-relaxed mb-6 font-medium">
           {product.description}
         </p>

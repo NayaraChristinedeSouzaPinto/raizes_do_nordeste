@@ -8,7 +8,7 @@ import { OrderTrackingModal } from './OrderTrackingModal';
 
 interface HeaderProps {
   onOpenCart: () => void;
-  onOpenTracking?: () => void; // 👈 Adicionado para sincronizar com o App.tsx
+  onOpenTracking?: () => void;
   activeOrder?: {
     id: string;
     items: Array<{ name: string; quantity: number; price: number }>;
@@ -28,7 +28,7 @@ export function Header({ onOpenCart, onOpenTracking, activeOrder }: HeaderProps)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isUnitDropdownOpen, setIsUnitDropdownOpen] = useState(false);
 
-  // Função unificada para abrir o rastreio (seja via prop do App ou modal interno)
+  // Abrir o rastreio
   const handleOpenTracking = () => {
     if (onOpenTracking) {
       onOpenTracking();
@@ -37,7 +37,7 @@ export function Header({ onOpenCart, onOpenTracking, activeOrder }: HeaderProps)
     }
   };
 
-  // Ícone dinâmico baseado no status do pedido
+  // Ícone status do pedido
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'Recebido': return <Clock size={14} className="text-amber-300 animate-pulse" />;
@@ -51,7 +51,7 @@ export function Header({ onOpenCart, onOpenTracking, activeOrder }: HeaderProps)
     <header className="sticky top-0 z-40 bg-amber-950 text-amber-50 shadow-md border-b border-amber-900">
       <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-4">
         
-        {/* Logotipo e Slogan */}
+        {/* Logo */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-between">
           <div className="flex items-center gap-2">
             <div className="bg-amber-800 p-2 rounded-xl text-amber-200">
@@ -136,7 +136,7 @@ export function Header({ onOpenCart, onOpenTracking, activeOrder }: HeaderProps)
         {/* Ações (Autenticação / Status do Pedido / Carrinho Desktop) */}
         <div className="hidden md:flex items-center gap-3">
           
-          {/* BOTÃO DE STATUS DO PEDIDO ATIVO (Desktop) */}
+          {/* BOTÃO DE STATUS DO PEDIDO ATIVO - Desktop */}
           {activeOrder && (
             <button
               onClick={handleOpenTracking}

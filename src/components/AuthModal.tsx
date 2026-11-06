@@ -29,7 +29,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   const [confirmPassword, setConfirmPassword] = useState('');
   const [lgpdChecked, setLgpdChecked] = useState(false);
 
-  // Estados de Esqueci minha senha (Simulação em 2 passos)
+  // Estados de Esqueci minha senha
   const [forgotStep, setForgotStep] = useState<1 | 2>(1);
   const [forgotIdentifier, setForgotIdentifier] = useState('');
   const [resetCodeInput, setResetCodeInput] = useState('');
@@ -37,7 +37,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
-  // Estados de visibilidade da senha (Olhinho)
+  // Estados de visibilidade da senha
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);
@@ -46,7 +46,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
 
   if (!isOpen) return null;
 
-  // Função para formatar o CPF automaticamente: 000.000.000-00
+  // Função para formatar o CPF
   const formatCPF = (value: string) => {
     const numbersOnly = value.replace(/\D/g, '').slice(0, 11);
     if (numbersOnly.length <= 3) return numbersOnly;
@@ -59,7 +59,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
     setCpf(formatCPF(e.target.value));
   };
 
-  // Função para formatar o telefone automaticamente: (81) 98888-8888
+  // Função para formatar o telefone
   const formatPhoneNumber = (value: string) => {
     const numbersOnly = value.replace(/\D/g, '').slice(0, 11);
     if (numbersOnly.length <= 2) return numbersOnly;
@@ -74,7 +74,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginIdentifier || !loginPassword) {
-      setErrorMsg('Por favor, preencha o CPF/E-mail e a senha.');
+      setErrorMsg('Por favor, preencha o CPF/e-mail e a senha.');
       return;
     }
 
@@ -84,7 +84,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
       if (onSuccess) onSuccess();
       onClose();
     } else {
-      setErrorMsg('CPF/E-mail ou senha incorretos. Verifique seus dados!');
+      setErrorMsg('CPF/e-mail ou senha incorretos. Verifique seus dados!');
     }
   };
 
@@ -122,7 +122,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
     }
   };
 
-  // Passo 1 da Recuperação: Valida silenciosamente no localStorage
+  // Passo 1 da Recuperação: Valida no localStorage
   const handleRequestCode = (e: React.FormEvent) => {
     e.preventDefault();
     if (!forgotIdentifier) {
@@ -150,9 +150,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
       setSuccessMsg('');
       setForgotStep(2);
     } else {
-      // Se não encontrou, exibe a mensagem neutra de segurança (LGPD) e fica na etapa 1
+      // Se não encontrou, exibe a mensagem e fica na etapa 1
       setSuccessMsg(
-        'Se você possui cadastro, siga as instruções de redefinição de senha enviadas para o e-mail informado.'
+        'Se você possui cadastro, siga as instruções de redefinição de senha enviadas ao e-mail informado.'
       );
       setForgotIdentifier('');
     }
@@ -190,7 +190,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
         setConfirmNewPassword('');
       }, 2500);
     } else {
-      setErrorMsg('Nenhum usuário encontrado com este CPF ou E-mail.');
+      setErrorMsg('Nenhum usuário encontrado com este CPF ou e-mail.');
     }
   };
 
@@ -318,7 +318,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-0.5">CPF (Apenas números):</label>
+                  <label className="block text-xs font-bold text-stone-700 mb-0.5">CPF:</label>
                   <input
                     type="text"
                     required
@@ -335,7 +335,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                     <input
                       type="tel"
                       required
-                      placeholder="(81) 98888-8888"
+                      placeholder="(41) 99999-9999"
                       value={phone}
                       onChange={handlePhoneChange}
                       className="w-full pl-8 pr-2 py-2 text-xs text-stone-900 bg-stone-50 border border-stone-300 rounded-xl focus:ring-2 focus:ring-amber-700"
@@ -441,11 +441,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
             </form>
           )}
 
-          {/* MODO ESQUECI A SENHA - SIMULAÇÃO EM 2 ETAPAS */}
+          {/* MODO ESQUECI A SENHA */}
           {modalMode === 'forgot' && (
             <div className="space-y-4">
               {forgotStep === 1 ? (
-                /* Etapa 1: Pedir CPF / E-mail */
+                /* Etapa 1: Pedir CPF / e-mail */
                 <form onSubmit={handleRequestCode} className="space-y-4">
                   <div>
                     <label className="block text-xs font-bold text-stone-700 mb-1">
@@ -482,7 +482,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                   </div>
                 </form>
               ) : (
-                /* Etapa 2: Digitar Código Simulado e Nova Senha */
+                /* Digitar Código Simulado e Nova Senha */
                 <form onSubmit={handleResetPassword} className="space-y-3">
                   <div className="p-3 bg-amber-50 border border-amber-200 text-amber-900 text-xs rounded-xl font-medium space-y-1">
                     <p>📧 <strong>E-mail simulado enviado!</strong></p>

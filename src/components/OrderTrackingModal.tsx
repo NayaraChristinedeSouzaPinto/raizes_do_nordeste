@@ -24,7 +24,7 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  // Se não houver pedido ativo, exibe um estado vazio amigável
+  // Sem pedido ativo
   if (!order) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -45,7 +45,7 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
     );
   }
 
-  // Definição dos passos do rastreio conforme os requisitos do projeto
+  // Passos do rastreio
   const steps = [
     { key: 'Recebido', label: 'Pedido Recebido', icon: Clock, desc: 'Aguardando confirmação da cozinha' },
     { key: 'Em Preparação', label: 'Em Preparação', icon: ChefHat, desc: 'Seus pratos estão sendo preparados' },
@@ -80,7 +80,7 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
 
         <div className="p-6 space-y-5">
           
-          {/* Linha do Tempo de Status (Stepper) */}
+          {/* Linha do Tempo de Status */}
           <div className="space-y-4">
             {steps.map((step, index) => {
               const Icon = step.icon;
@@ -125,7 +125,7 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
             </div>
           </div>
 
-          {/* 🧪 PAINEL DE QA / TESTE PARA ALTERAR STATUS */}
+          {/* TESTE TROCA STATUS */}
           {onUpdateStatus && (
             <div className="p-3 bg-stone-100 border border-stone-300 rounded-xl space-y-2">
               <span className="font-bold text-stone-800 text-[11px] block">

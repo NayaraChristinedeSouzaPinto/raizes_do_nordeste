@@ -47,13 +47,13 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckou
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [redeemSuccessMsg, setRedeemSuccessMsg] = useState('');
 
-  // Estados para os dados do cartão de crédito/débito e validação
+  // Estados para os dados do cartão e validação
   const [cardNumber, setCardNumber] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCvv, setCardCvv] = useState('');
   const [cardError, setCardError] = useState('');
 
-  // 1. Sempre que o modal abrir ou o carrinho mudar, reseta para a etapa inicial do carrinho
+  // Sempre que o modal abrir ou o carrinho mudar, reseta para a etapa inicial do carrinho
   useEffect(() => {
     if (isOpen) {
       setCheckoutStep('cart');
@@ -123,13 +123,13 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckou
     setCardError('');
   };
 
-  // Clique em Concluir Pagamento na tela de seleção
+  // Clique em Concluir Pagamento
   const handleInitialPaymentSubmit = () => {
     if (paymentMethod === 'pix') {
-      // Se for PIX, abre a tela com a chave gerada e o QR Code simulado
+      // Se for PIX, abre a tela com a chave gerada e o QR Code
       setCheckoutStep('pix-qrcode');
     } else {
-      // Validações rigorosas para Cartão de Crédito / Débito
+      // Validações para Cartão
       const cleanNumber = cardNumber.replace(/\s/g, '');
       if (cleanNumber.length < 16) {
         setCardError('O número do cartão deve conter exatamente 16 dígitos.');
@@ -232,7 +232,6 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckou
             </button>
           </div>
 
-          {/* Conteúdo Dinâmico */}
           <div className="p-4 flex-1 overflow-y-auto space-y-4">
             
             {/* ETAPA: PIX QR CODE E CHAVE COPIA E COLA */}
@@ -243,7 +242,7 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckou
                   <span className="text-lg font-black text-emerald-950">R$ {totalAmount.toFixed(2).replace('.', ',')}</span>
                 </div>
 
-                {/* QR Code Fictício centralizado */}
+                {/* QR Code */}
                 <div className="bg-white p-4 border-2 border-dashed border-emerald-300 rounded-2xl inline-block shadow-inner mx-auto">
                   <div className="w-36 h-36 bg-emerald-900/10 rounded-xl flex items-center justify-center mx-auto text-emerald-800">
                     <QrCode size={96} />
@@ -271,9 +270,9 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckou
                   </div>
                 </div>
 
-                {/* Painel de Simulação QA / CT08 */}
+                {/* Simulação */}
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1 text-[11px] text-left">
-                  <span className="font-bold text-amber-950 block">🧪 Painel de Simulação (QA / Uninter):</span>
+                  <span className="font-bold text-amber-950 block">🧪 Simulação:</span>
                   <label className="flex items-center gap-2 text-stone-700 cursor-pointer pt-1">
                     <input 
                       type="checkbox" 
@@ -281,7 +280,7 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckou
                       onChange={(e) => setSimulateError(e.target.checked)}
                       className="rounded text-amber-800 focus:ring-amber-800 cursor-pointer"
                     />
-                    <span>Simular falha de compensação PIX</span>
+                    <span>Simular falha PIX</span>
                   </label>
                 </div>
 
@@ -310,18 +309,18 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckou
                 <Loader2 size={56} className="text-amber-800 animate-spin" />
                 <h3 className="text-lg font-bold text-stone-800">Validando Pagamento...</h3>
                 <p className="text-xs text-stone-500 max-w-xs">
-                  Consultando compensação junto ao gateway externo. Aguarde um instante.
+                  Consultando pagamento junto ao gateway externo. Aguarde um instante.
                 </p>
               </div>
             )}
 
-            {/* ETAPA: ERRO / RECUSA (CT08) */}
+            {/* ETAPA: ERRO / RECUSA */}
             {checkoutStep === 'error' && (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3">
                 <AlertCircle size={64} className="text-red-600 animate-bounce" />
                 <h3 className="text-xl font-bold text-stone-800">Pagamento Não Aprovado</h3>
                 <p className="text-xs text-stone-600 leading-relaxed">
-                  O gateway externo recusou ou não identificou a transação. Seus itens continuam salvos no carrinho.
+                  O gateway externo recusou ou não identificou a transação. Ajuste a forma de pagamento.
                 </p>
                 <div className="w-full pt-4 space-y-2">
                   <button
@@ -409,7 +408,7 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckou
                   </div>
                 </div>
 
-                {/* Campos do Cartão (aparecem apenas se escolher crédito ou débito) com Validação e Formatação */}
+                {/* Campos do Cartão */}
                 {paymentMethod !== 'pix' && (
                   <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl space-y-3 text-xs">
                     <span className="font-bold text-stone-700 block">Insira os dados do cartão:</span>
@@ -449,9 +448,9 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckou
                   </div>
                 )}
 
-                {/* Painel de Simulação */}
+                {/* Simulação */}
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1 text-[11px]">
-                  <span className="font-bold text-amber-950 block">🧪 Painel de Simulação:</span>
+                  <span className="font-bold text-amber-950 block">🧪 Simulação:</span>
                   <label className="flex items-center gap-2 text-stone-700 cursor-pointer pt-1">
                     <input 
                       type="checkbox" 

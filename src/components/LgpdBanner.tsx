@@ -5,7 +5,7 @@ export function LgpdBanner() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Exibe o banner apenas se o cliente ainda não tomou uma decisão
+    // Só exibe o banner se o cliente ainda não escolheu
     const lgpdConsent = localStorage.getItem('raizes_lgpd_consent');
     if (lgpdConsent === null) {
       setIsVisible(true);
@@ -41,7 +41,7 @@ export function LgpdBanner() {
           </div>
         </div>
 
-        {/* Botões Aceitar / Recusar */}
+        {/* Botões Aceitar */}
         <div className="flex items-center gap-2 w-full md:w-auto justify-end shrink-0">
           <button
             onClick={handleDecline}
