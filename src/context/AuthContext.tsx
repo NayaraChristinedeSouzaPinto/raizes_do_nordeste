@@ -186,7 +186,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (hasReward) {
       newTransactions.push({
         id: `${Date.now()}-redeem`,
-        title: `#${orderId} - Resgate Fidelidade`,
+        title: `#${orderId} - Resgate Clube Raízes`,
         date: today,
         points: `-10 pts`,
         type: 'redeemed',
