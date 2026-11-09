@@ -69,7 +69,7 @@ export function Header({ onOpenCart, onOpenTracking, activeOrder }: HeaderProps)
             </div>
           </div>
 
-          {/* Botões Mobile (Rastreio do Pedido Ativo + Carrinho) */}
+          {/* Botões Mobile (Rastreio + Perfil/Login + Carrinho) */}
           <div className="flex items-center gap-2 md:hidden">
             {activeOrder && (
               <button
@@ -79,6 +79,25 @@ export function Header({ onOpenCart, onOpenTracking, activeOrder }: HeaderProps)
               >
                 {getStatusIcon(activeOrder.status)}
                 <span className="text-[10px] font-bold">#{activeOrder.id}</span>
+              </button>
+            )}
+
+            {/* Botão Perfil Mobile */}
+            {user ? (
+              <button
+                onClick={() => setIsProfileModalOpen(true)}
+                className="bg-amber-900 border border-amber-700 p-2.5 rounded-xl text-amber-100 flex items-center gap-1 cursor-pointer"
+                title="Meu Perfil"
+              >
+                <User size={18} className="text-amber-300" />
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className="bg-amber-900 border border-amber-700 p-2.5 rounded-xl text-amber-100 flex items-center gap-1 cursor-pointer"
+                title="Entrar"
+              >
+                <User size={18} className="text-amber-300" />
               </button>
             )}
 

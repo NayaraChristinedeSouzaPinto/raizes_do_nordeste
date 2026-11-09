@@ -66,24 +66,26 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
   const currentIdx = getCurrentStepIndex(order.status);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-3 md:p-4">
+      {/* Container principal limitado à altura da tela e flexível para mobile */}
+      <div className="bg-white w-full max-w-md max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
         
-        {/* Cabeçalho */}
-        <div className="p-4 bg-amber-800 text-white flex items-center justify-between">
+        {/* Cabeçalho Fixo */}
+        <div className="p-4 bg-amber-800 text-white flex items-center justify-between shrink-0">
           <div>
-            <h2 className="text-lg font-bold">Rastreio do Pedido</h2>
+            <h2 className="text-base md:text-lg font-bold">Rastreio do Pedido</h2>
             <span className="text-[11px] text-amber-200 font-mono">Pedido #{order.id}</span>
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-amber-700 rounded-lg transition-colors cursor-pointer">
+          <button onClick={onClose} className="p-1.5 hover:bg-amber-700 rounded-lg transition-colors cursor-pointer">
             <X size={20} />
           </button>
         </div>
 
-        <div className="p-6 space-y-5">
+        {/* Corpo com rolagem interna (overflow-y-auto) para não estourar no celular */}
+        <div className="p-4 md:p-6 space-y-4 overflow-y-auto flex-1">
           
           {/* Linha do Tempo de Status */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             {steps.map((step, index) => {
               const Icon = step.icon;
               const isCompleted = index <= currentIdx;
@@ -92,7 +94,7 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
               return (
                 <div key={step.key} className="flex items-start gap-3 relative">
                   {index < steps.length - 1 && (
-                    <div className={`absolute left-4 top-8 w-0.5 h-8 ${index < currentIdx ? 'bg-amber-800' : 'bg-stone-200'}`} />
+                    <div className={`absolute left-4 top-8 w-0.5 h-7 ${index < currentIdx ? 'bg-amber-800' : 'bg-stone-200'}`} />
                   )}
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 transition-colors ${
                     isCurrent ? 'bg-amber-800 text-white ring-4 ring-amber-100' : isCompleted ? 'bg-amber-700 text-white' : 'bg-stone-100 text-stone-400'
@@ -111,9 +113,9 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
           </div>
 
           {/* Resumo do Pedido */}
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-2">
-            <p className="text-xs font-bold text-amber-900 border-b border-amber-200/60 pb-1.5">Itens do Pedido</p>
-            <div className="max-h-28 overflow-y-auto space-y-1.5 pr-1">
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
+            <p className="text-xs font-bold text-amber-900 border-b border-amber-200/60 pb-1">Itens do Pedido</p>
+            <div className="max-h-24 overflow-y-auto space-y-1.5 pr-1">
               {order.items.map((item, idx) => (
                 <div key={idx} className="flex justify-between text-xs text-stone-700">
                   <span>{item.quantity}x {item.name}</span>
@@ -174,16 +176,19 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
             </div>
           )}
 
-          {/* Botão Fechar */}
+        </div>
+
+        {/* Rodapé Fixo com Botão Fechar */}
+        <div className="p-3 bg-white border-t border-stone-200 shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-3 bg-stone-800 hover:bg-stone-900 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer shadow-md"
+            className="w-full py-2.5 bg-stone-800 hover:bg-stone-900 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer shadow-md"
           >
             Fechar Rastreio
           </button>
-
         </div>
+
       </div>
     </div>
   );

@@ -232,11 +232,12 @@ export const CartModal: React.FC<CartModalProps> = ({
   return (
     <>
       <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm">
+        {/* Adicionado max-h-full e flex-col para controlar ocupação no mobile */}
         <div className="bg-white w-full max-w-md h-full flex flex-col justify-between shadow-2xl animate-in slide-in-from-right duration-300">
           
           {/* Cabeçalho */}
-          <div className="p-4 bg-amber-800 text-white flex items-center justify-between">
-            <h2 className="text-lg font-bold">
+          <div className="p-3.5 md:p-4 bg-amber-800 text-white flex items-center justify-between shrink-0">
+            <h2 className="text-base md:text-lg font-bold">
               {checkoutStep === 'payment' ? 'Forma de Pagamento' : checkoutStep === 'pix-qrcode' ? 'Pagamento via PIX' : 'Seu Pedido'}
             </h2>
             <button
@@ -247,7 +248,8 @@ export const CartModal: React.FC<CartModalProps> = ({
             </button>
           </div>
 
-          <div className="p-4 flex-1 overflow-y-auto space-y-4">
+          {/* Área de conteúdo central com rolagem otimizada */}
+          <div className="p-3 md:p-4 flex-1 overflow-y-auto space-y-3">
             
             {/* ETAPA: PIX QR CODE E CHAVE COPIA E COLA */}
             {checkoutStep === 'pix-qrcode' && (
@@ -257,10 +259,9 @@ export const CartModal: React.FC<CartModalProps> = ({
                   <span className="text-lg font-black text-emerald-950">R$ {totalAmount.toFixed(2).replace('.', ',')}</span>
                 </div>
 
-                {/* QR Code */}
-                <div className="bg-white p-4 border-2 border-dashed border-emerald-300 rounded-2xl inline-block shadow-inner mx-auto">
-                  <div className="w-36 h-36 bg-emerald-900/10 rounded-xl flex items-center justify-center mx-auto text-emerald-800">
-                    <QrCode size={96} />
+                <div className="bg-white p-3 border-2 border-dashed border-emerald-300 rounded-2xl inline-block shadow-inner mx-auto">
+                  <div className="w-32 h-32 bg-emerald-900/10 rounded-xl flex items-center justify-center mx-auto text-emerald-800">
+                    <QrCode size={80} />
                   </div>
                   <span className="text-[10px] text-stone-500 mt-2 block font-mono">PIX QR Code</span>
                 </div>
@@ -285,7 +286,6 @@ export const CartModal: React.FC<CartModalProps> = ({
                   </div>
                 </div>
 
-                {/* Simulação */}
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1 text-[11px] text-left">
                   <span className="font-bold text-amber-950 block">🧪 Simulação:</span>
                   <label className="flex items-center gap-2 text-stone-700 cursor-pointer pt-1">
@@ -422,7 +422,6 @@ export const CartModal: React.FC<CartModalProps> = ({
                   </div>
                 </div>
 
-                {/* Campos do Cartão */}
                 {paymentMethod !== 'pix' && (
                   <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl space-y-3 text-xs">
                     <span className="font-bold text-stone-700 block">Insira os dados do cartão:</span>
@@ -462,7 +461,6 @@ export const CartModal: React.FC<CartModalProps> = ({
                   </div>
                 )}
 
-                {/* Simulação */}
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1 text-[11px]">
                   <span className="font-bold text-amber-950 block">🧪 Simulação:</span>
                   <label className="flex items-center gap-2 text-stone-700 cursor-pointer pt-1">
@@ -509,7 +507,6 @@ export const CartModal: React.FC<CartModalProps> = ({
                       ⭐️ Saldo de pontos atualizado no seu perfil com sucesso!
                     </div>
 
-                    {/* Botão de Rastreio adicionado na tela de sucesso */}
                     <div className="w-full pt-2 space-y-2">
                       <button
                         type="button"
@@ -529,99 +526,102 @@ export const CartModal: React.FC<CartModalProps> = ({
                     <p className="text-sm mt-1">Adicione algumas delícias nordestinas para começar!</p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900">
-                      📍 Retirada em: <strong>{selectedUnit.name}</strong>
+                  <div className="space-y-3">
+                    <div className="p-2.5 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-center justify-between shrink-0">
+                      <span>📍 Unidade: <strong>{selectedUnit.name}</strong></span>
                     </div>
 
                     {redeemSuccessMsg && (
-                      <div className="p-2.5 bg-green-50 border border-green-200 text-green-800 text-xs rounded-xl font-medium text-center">
+                      <div className="p-2 bg-green-50 border border-green-200 text-green-800 text-xs rounded-xl font-medium text-center shrink-0">
                         🎉 {redeemSuccessMsg}
                       </div>
                     )}
 
-                    {cart.map(({ product, quantity }) => (
-                      <div
-                        key={product.id}
-                        className="flex items-center justify-between gap-3 p-3 bg-stone-50 rounded-xl border border-stone-100"
-                      >
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-16 h-16 object-cover rounded-lg"
-                        />
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-sm text-stone-800 line-clamp-1">
-                            {product.name}
-                          </h4>
-                          <span className="text-xs text-amber-800 font-bold">
-                            {product.price === 0 ? <span className="text-green-700">GRÁTIS</span> : `R$ ${(product.price * quantity).toFixed(2).replace('.', ',')}`}
-                          </span>
-                          {product.price > 0 && (
-                            <div className="flex items-center gap-2 mt-2">
-                              <button
-                                onClick={() => updateQuantity(product.id, quantity - 1)}
-                                className="p-1 bg-stone-200 hover:bg-stone-300 rounded-md transition-colors cursor-pointer"
-                              >
-                                <Minus size={14} />
-                              </button>
-                              <span className="text-xs font-bold px-1">{quantity}</span>
-                              <button
-                                onClick={() => updateQuantity(product.id, quantity + 1)}
-                                className="p-1 bg-stone-200 hover:bg-stone-300 rounded-md transition-colors cursor-pointer"
-                              >
-                                <Plus size={14} />
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                        <button
-                          onClick={() => removeFromCart(product.id)}
-                          className="text-red-500 hover:text-red-700 p-1 transition-colors cursor-pointer"
+                    {/* LISTA DE ITENS EXPANSÍVEL: Dá mais espaço vertical para os produtos */}
+                    <div className="space-y-2.5 max-h-[42vh] md:max-h-64 overflow-y-auto pr-1">
+                      {cart.map(({ product, quantity }) => (
+                        <div
+                          key={product.id}
+                          className="flex items-center justify-between gap-3 p-2.5 bg-stone-50 rounded-xl border border-stone-200/80 shadow-2xs"
                         >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    ))}
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-14 h-14 object-cover rounded-lg shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-xs text-stone-800 truncate">
+                              {product.name}
+                            </h4>
+                            <span className="text-xs text-amber-900 font-bold block mt-0.5">
+                              {product.price === 0 ? <span className="text-emerald-700">GRÁTIS</span> : `R$ ${(product.price * quantity).toFixed(2).replace('.', ',')}`}
+                            </span>
+                            {product.price > 0 && (
+                              <div className="flex items-center gap-2 mt-1.5">
+                                <button
+                                  onClick={() => updateQuantity(product.id, quantity - 1)}
+                                  className="p-1 bg-stone-200 hover:bg-stone-300 rounded-md transition-colors cursor-pointer"
+                                >
+                                  <Minus size={12} />
+                                </button>
+                                <span className="text-xs font-bold px-1">{quantity}</span>
+                                <button
+                                  onClick={() => updateQuantity(product.id, quantity + 1)}
+                                  className="p-1 bg-stone-200 hover:bg-stone-300 rounded-md transition-colors cursor-pointer"
+                                >
+                                  <Plus size={12} />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => removeFromCart(product.id)}
+                            className="text-red-500 hover:text-red-700 p-1.5 transition-colors cursor-pointer shrink-0"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </>
             )}
           </div>
 
-          {/* Rodapé e Ação */}
+          {/* Rodapé fixo e compacto para sobrar espaço à lista de produtos */}
           {checkoutStep === 'cart' && !orderPlaced && cart.length > 0 && (
-            <div className="p-4 border-t border-stone-200 bg-stone-50 space-y-3">
+            <div className="p-3 md:p-4 border-t border-stone-200 bg-stone-50 space-y-2.5 shrink-0">
               {user ? (
                 <div className="space-y-2">
-                  <div className="p-3 bg-amber-100/70 border border-amber-300 rounded-xl flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2 text-amber-950">
-                      <Award size={16} className="text-amber-800 shrink-0" />
-                      <span><strong>{user.name}</strong> • <strong>{user.points} pts</strong></span>
+                  <div className="p-2.5 bg-amber-100/70 border border-amber-300 rounded-xl flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5 text-amber-950 truncate">
+                      <Award size={15} className="text-amber-800 shrink-0" />
+                      <span className="truncate"><strong>{user.name}</strong> • <strong>{user.points} pts</strong></span>
                     </div>
-                    <span className="text-[11px] text-amber-900 font-medium">
-                      +{pointsToEarn} pts neste pedido
+                    <span className="text-[10px] text-amber-900 font-medium shrink-0">
+                      +{pointsToEarn} pts
                     </span>
                   </div>
 
-                  <div className="p-3 bg-white border border-amber-200 rounded-xl space-y-2 shadow-sm">
+                  <div className="p-2.5 bg-white border border-amber-200 rounded-xl space-y-1.5 shadow-2xs">
                     <div className="flex items-center justify-between text-xs font-bold text-amber-900">
-                      <div className="flex items-center gap-1.5">
-                        <Gift size={14} />
+                      <div className="flex items-center gap-1">
+                        <Gift size={13} />
                         <span>Resgatar Prêmio (10 pts):</span>
                       </div>
                       {hasRewardInCart && (
-                        <span className="text-[10px] text-green-700 bg-green-50 px-1.5 py-0.5 rounded border border-green-200">
-                          Resgate aplicado
+                        <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                          Aplicado
                         </span>
                       )}
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-1.5">
                       <button
                         type="button"
                         disabled={user.points < 10 || hasRewardInCart}
                         onClick={() => handleRedeemItem('Bolo de Macaxeira')}
-                        className={`py-1.5 px-2 rounded-lg text-[11px] font-bold transition-colors cursor-pointer border ${
+                        className={`py-1 px-2 rounded-lg text-[10px] font-bold transition-colors cursor-pointer border truncate ${
                           user.points >= 10 && !hasRewardInCart
                             ? 'bg-amber-800 hover:bg-amber-900 text-white border-amber-800'
                             : 'bg-stone-100 text-stone-400 border-stone-200 cursor-not-allowed'
@@ -633,7 +633,7 @@ export const CartModal: React.FC<CartModalProps> = ({
                         type="button"
                         disabled={user.points < 10 || hasRewardInCart}
                         onClick={() => handleRedeemItem('Café Coado')}
-                        className={`py-1.5 px-2 rounded-lg text-[11px] font-bold transition-colors cursor-pointer border ${
+                        className={`py-1 px-2 rounded-lg text-[10px] font-bold transition-colors cursor-pointer border truncate ${
                           user.points >= 10 && !hasRewardInCart
                             ? 'bg-amber-800 hover:bg-amber-900 text-white border-amber-800'
                             : 'bg-stone-100 text-stone-400 border-stone-200 cursor-not-allowed'
@@ -645,35 +645,32 @@ export const CartModal: React.FC<CartModalProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2 text-amber-900">
-                    <User size={16} className="shrink-0" />
-                    <span>Faça login para juntar pontos de fidelidade!</span>
+                <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5 text-amber-900 truncate">
+                    <User size={15} className="shrink-0" />
+                    <span className="truncate">Faça login para juntar pontos!</span>
                   </div>
                   <button
                     onClick={() => setIsAuthModalOpen(true)}
-                    className="bg-amber-800 hover:bg-amber-900 text-white font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer text-[11px] shrink-0"
+                    className="bg-amber-800 hover:bg-amber-900 text-white font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer text-[11px] shrink-0"
                   >
                     Entrar
                   </button>
                 </div>
               )}
 
-              <div className="space-y-1 pt-2 border-t border-stone-200 text-xs text-stone-600">
-                <div className="flex justify-between items-center text-base font-bold text-stone-900 pt-1">
-                  <span>Total do Pedido:</span>
-                  <span className="text-amber-800">
-                    R$ {totalAmount.toFixed(2).replace('.', ',')}
-                  </span>
-                </div>
+              <div className="flex justify-between items-center text-sm font-bold text-stone-900 pt-1 border-t border-stone-200">
+                <span>Total do Pedido:</span>
+                <span className="text-amber-800 text-base font-black">
+                  R$ {totalAmount.toFixed(2).replace('.', ',')}
+                </span>
               </div>
 
-              {/* Botão de checkout desabilitado se não houver itens pagos */}
               <button
                 type="button"
                 onClick={handleProceedToPayment}
                 disabled={!hasPaidItems}
-                className={`w-full font-bold py-3 rounded-xl transition-colors shadow-md text-sm ${
+                className={`w-full font-bold py-2.5 rounded-xl transition-colors shadow-md text-xs md:text-sm ${
                   !hasPaidItems
                     ? 'bg-stone-300 text-stone-500 cursor-not-allowed'
                     : user
