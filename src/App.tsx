@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { ProductCard } from './components/ProductCard';
 import { CartModal } from './components/CartModal';
@@ -6,13 +6,13 @@ import { OrderTrackingModal } from './components/OrderTrackingModal';
 import { PRODUCTS_MOCK } from './mocks/products';
 import { CartProvider, useCart } from './context/CartContext';
 import { LgpdBanner } from './components/LgpdBanner';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 export interface Order {
   id: string;
   items: Array<{ name: string; quantity: number; price: number }>;
   total: number;
-  status: 'Recebido' | 'Em Preparação' | 'Pronto';
+  status: 'Recebido' | 'Em Preparação' | 'Pronto' | 'Retirado';
   createdAt: string;
 }
 
@@ -91,6 +91,15 @@ function AppContent() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isTrackingOpen, setIsTrackingOpen] = useState(false);
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
+  const { user } = useAuth();
+
+  // Se o usuário fizer logout, limpa o pedido ativo imediatamente
+  useEffect(() => {
+    if (!user) {
+      setActiveOrder(null);
+      setIsTrackingOpen(false);
+    }
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-[#fcf8f2] flex flex-col relative">
@@ -106,10 +115,17 @@ function AppContent() {
         onCheckoutSuccess={(newOrder) => {
           setActiveOrder(newOrder);
         }}
+        onOpenTracking={() => setIsTrackingOpen(true)}
       />
       <OrderTrackingModal
         isOpen={isTrackingOpen}
-        onClose={() => setIsTrackingOpen(false)}
+        onClose={() => {
+          setIsTrackingOpen(false);
+          // Se o pedido já estiver retirado, limpa do Header ao fechar a modal
+          if (activeOrder?.status === 'Retirado') {
+            setActiveOrder(null);
+          }
+        }}
         order={activeOrder}
         onUpdateStatus={(newStatus) => {
           setActiveOrder(prev => prev ? { ...prev, status: newStatus } : null);

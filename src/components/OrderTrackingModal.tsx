@@ -1,11 +1,11 @@
 import React from 'react';
-import { X, Clock, ChefHat, PackageCheck, ShoppingBag } from 'lucide-react';
+import { X, Clock, ChefHat, PackageCheck, ShoppingBag, CheckCircle2 } from 'lucide-react';
 
 interface Order {
   id: string;
   items: Array<{ name: string; quantity: number; price: number }>;
   total: number;
-  status: 'Recebido' | 'Em Preparação' | 'Pronto';
+  status: 'Recebido' | 'Em Preparação' | 'Pronto' | 'Retirado';
   createdAt: string;
 }
 
@@ -13,7 +13,7 @@ interface OrderTrackingModalProps {
   isOpen: boolean;
   onClose: () => void;
   order: Order | null;
-  onUpdateStatus?: (newStatus: 'Recebido' | 'Em Preparação' | 'Pronto') => void;
+  onUpdateStatus?: (newStatus: 'Recebido' | 'Em Preparação' | 'Pronto' | 'Retirado') => void;
 }
 
 export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ 
@@ -45,11 +45,12 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
     );
   }
 
-  // Passos do rastreio
+  // Passos do rastreio incluindo a etapa final de Retirado
   const steps = [
     { key: 'Recebido', label: 'Pedido Recebido', icon: Clock, desc: 'Aguardando confirmação da cozinha' },
     { key: 'Em Preparação', label: 'Em Preparação', icon: ChefHat, desc: 'Seus pratos estão sendo preparados' },
     { key: 'Pronto', label: 'Pronto para Retirada', icon: PackageCheck, desc: 'Retire no balcão da unidade' },
+    { key: 'Retirado', label: 'Pedido Retirado', icon: CheckCircle2, desc: 'Pedido finalizado!' },
   ];
 
   const getCurrentStepIndex = (status: string) => {
@@ -57,6 +58,7 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
       case 'Recebido': return 0;
       case 'Em Preparação': return 1;
       case 'Pronto': return 2;
+      case 'Retirado': return 3;
       default: return 0;
     }
   };
@@ -129,16 +131,14 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
           {onUpdateStatus && (
             <div className="p-3 bg-stone-100 border border-stone-300 rounded-xl space-y-2">
               <span className="font-bold text-stone-800 text-[11px] block">
-                🧪 Painel de Teste (Simular Mudança de Status):
+                🧪 Simulação:
               </span>
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="grid grid-cols-2 gap-1.5">
                 <button
                   type="button"
                   onClick={() => onUpdateStatus('Recebido')}
                   className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer border ${
-                    order.status === 'Recebido'
-                      ? 'bg-amber-800 text-white border-amber-800'
-                      : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'
+                    order.status === 'Recebido' ? 'bg-amber-800 text-white border-amber-800' : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'
                   }`}
                 >
                   Recebido
@@ -147,9 +147,7 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
                   type="button"
                   onClick={() => onUpdateStatus('Em Preparação')}
                   className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer border ${
-                    order.status === 'Em Preparação'
-                      ? 'bg-amber-800 text-white border-amber-800'
-                      : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'
+                    order.status === 'Em Preparação' ? 'bg-amber-800 text-white border-amber-800' : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'
                   }`}
                 >
                   Em Preparo
@@ -158,12 +156,19 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
                   type="button"
                   onClick={() => onUpdateStatus('Pronto')}
                   className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer border ${
-                    order.status === 'Pronto'
-                      ? 'bg-emerald-700 text-white border-emerald-700'
-                      : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'
+                    order.status === 'Pronto' ? 'bg-amber-800 text-white border-amber-800' : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'
                   }`}
                 >
                   Pronto
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onUpdateStatus('Retirado')}
+                  className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer border ${
+                    order.status === 'Retirado' ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'
+                  }`}
+                >
+                  Retirado
                 </button>
               </div>
             </div>

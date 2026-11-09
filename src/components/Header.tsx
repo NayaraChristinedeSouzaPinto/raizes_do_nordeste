@@ -13,7 +13,7 @@ interface HeaderProps {
     id: string;
     items: Array<{ name: string; quantity: number; price: number }>;
     total: number;
-    status: 'Recebido' | 'Em Preparação' | 'Pronto';
+    status: 'Recebido' | 'Em Preparação' | 'Pronto' | "Retirado";
     createdAt: string;
   } | null;
 }

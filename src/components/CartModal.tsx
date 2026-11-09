@@ -27,15 +27,21 @@ interface CartModalProps {
     id: string;
     items: Array<{ name: string; quantity: number; price: number }>;
     total: number;
-    status: 'Recebido' | 'Em Preparação' | 'Pronto';
+    status: 'Recebido' | 'Em Preparação' | 'Pronto' | 'Retirado';
     createdAt: string;
   }) => void;
+  onOpenTracking?: () => void;
 }
 
 type PaymentMethod = 'pix' | 'credit' | 'debit';
 type CheckoutStep = 'cart' | 'payment' | 'pix-qrcode' | 'processing' | 'error';
 
-export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckoutSuccess }) => {
+export const CartModal: React.FC<CartModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  onCheckoutSuccess,
+  onOpenTracking
+}) => {
   const { cart, selectedUnit, updateQuantity, removeFromCart, totalAmount, clearCart, addToCart } = useCart();
   const { user, processCheckoutPoints } = useAuth();
   
@@ -89,7 +95,16 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckou
   const hasRewardInCart = cart.some(item => item.product.id.startsWith('reward-'));
   const pointsToEarn = Math.floor(totalAmount / 10);
 
+  // 1. Regra de fidelidade: verifica se há produtos pagos no carrinho (exclui itens grátis de resgate)
+  const hasPaidItems = cart.some(item => item.product.price > 0);
+
   const handleProceedToPayment = () => {
+    // 2. Impede prosseguir se o carrinho tem apenas itens de fidelidade (grátis / zero-value)
+    if (!hasPaidItems) {
+      alert('Adicione pelo menos um produto do cardápio além do resgate para finalizar o pedido.');
+      return;
+    }
+
     if (!user) {
       setIsAuthModalOpen(true);
       return;
@@ -170,7 +185,7 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckou
           createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
 
-        processCheckoutPoints(totalAmount, hasRewardInCart);
+        processCheckoutPoints(totalAmount, hasRewardInCart, orderData.id);
 
         if (onCheckoutSuccess) {
           onCheckoutSuccess(orderData);
@@ -247,11 +262,11 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckou
                   <div className="w-36 h-36 bg-emerald-900/10 rounded-xl flex items-center justify-center mx-auto text-emerald-800">
                     <QrCode size={96} />
                   </div>
-                  <span className="text-[10px] text-stone-500 mt-2 block font-mono">PIX Copia e Cola Oficial</span>
+                  <span className="text-[10px] text-stone-500 mt-2 block font-mono">PIX QR Code</span>
                 </div>
 
                 <div className="space-y-1.5 text-left">
-                  <label className="text-xs font-bold text-stone-700 block">Chave Pix (Copia e Cola):</label>
+                  <label className="text-xs font-bold text-stone-700 block">Chave Pix:</label>
                   <div className="flex gap-2">
                     <input 
                       type="text" 
@@ -373,7 +388,6 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckou
                         <QrCode size={18} className="text-emerald-600" />
                         <span>PIX</span>
                       </div>
-                      <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Recomendado</span>
                     </button>
 
                     <button
@@ -441,7 +455,7 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckou
                         placeholder="CVV" 
                         value={cardCvv}
                         onChange={handleCvvChange}
-                        maxLength={4}
+                        maxLength={3}
                         className="w-full p-2 bg-white border border-stone-300 rounded-lg text-xs outline-none focus:ring-1 focus:ring-amber-800 font-mono"
                       />
                     </div>
@@ -485,14 +499,28 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckou
             {checkoutStep === 'cart' && (
               <>
                 {orderPlaced ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3">
+                  <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
                     <CheckCircle size={64} className="text-green-600 animate-bounce" />
                     <h3 className="text-xl font-bold text-stone-800">Pedido Confirmado!</h3>
                     <p className="text-sm text-stone-600 leading-relaxed">
                       {user?.name.split(' ')[0]}, seu pedido foi enviado para a unidade <strong>{selectedUnit.name}</strong> e já está em preparação!
                     </p>
-                    <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 font-semibold">
+                    <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 font-semibold w-full">
                       ⭐️ Saldo de pontos atualizado no seu perfil com sucesso!
+                    </div>
+
+                    {/* Botão de Rastreio adicionado na tela de sucesso */}
+                    <div className="w-full pt-2 space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose();
+                          if (onOpenTracking) onOpenTracking();
+                        }}
+                        className="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 rounded-xl transition-colors cursor-pointer shadow-md text-xs flex items-center justify-center gap-2"
+                      >
+                        <span> Rastreie seu Pedido</span>
+                      </button>
                     </div>
                   </div>
                 ) : cart.length === 0 ? (
@@ -640,16 +668,24 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckou
                 </div>
               </div>
 
+              {/* Botão de checkout desabilitado se não houver itens pagos */}
               <button
                 type="button"
                 onClick={handleProceedToPayment}
-                className={`w-full font-bold py-3 rounded-xl transition-colors cursor-pointer shadow-md text-sm ${
-                  user
-                    ? 'bg-amber-800 hover:bg-amber-900 text-white'
-                    : 'bg-amber-700 hover:bg-amber-800 text-white'
+                disabled={!hasPaidItems}
+                className={`w-full font-bold py-3 rounded-xl transition-colors shadow-md text-sm ${
+                  !hasPaidItems
+                    ? 'bg-stone-300 text-stone-500 cursor-not-allowed'
+                    : user
+                      ? 'bg-amber-800 hover:bg-amber-900 text-white cursor-pointer'
+                      : 'bg-amber-700 hover:bg-amber-800 text-white cursor-pointer'
                 }`}
               >
-                {user ? 'Ir para Pagamento' : 'Entre para Finalizar!'}
+                {!hasPaidItems 
+                  ? 'Adicione produtos pagos para finalizar' 
+                  : user 
+                    ? 'Ir para Pagamento' 
+                    : 'Entre para Finalizar!'}
               </button>
 
               <p className="text-[10px] text-stone-500 text-center flex items-center justify-center gap-1">

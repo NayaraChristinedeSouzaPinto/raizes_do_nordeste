@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, User, Lock, Mail, Phone, Eye, EyeOff, ShieldCheck, KeyRound, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -43,6 +43,29 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);
   const [showForgotNewPassword, setShowForgotNewPassword] = useState(false);
   const [showForgotConfirmPassword, setShowForgotConfirmPassword] = useState(false);
+
+  // 👈 RESET AUTOMÁTICO AO ABRIR O MODAL
+  useEffect(() => {
+    if (isOpen) {
+      setModalMode('login'); // Sempre abre na tela de login
+      setErrorMsg('');
+      setSuccessMsg('');
+      setLoginIdentifier('');
+      setLoginPassword('');
+      setName('');
+      setEmail('');
+      setPhone('');
+      setCpf('');
+      setPassword('');
+      setConfirmPassword('');
+      setLgpdChecked(false);
+      setForgotStep(1);
+      setForgotIdentifier('');
+      setResetCodeInput('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

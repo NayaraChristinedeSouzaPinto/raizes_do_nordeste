@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Award, CheckCircle, ArrowUpRight, ArrowDownLeft, Gift, User } from 'lucide-react';
+import { X, Award, CheckCircle, ArrowUpRight, ArrowDownLeft, Gift, User, History } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { FIDELITY_HISTORY_MOCK } from '../mocks/fidelity';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -35,6 +34,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
   }, [user, isOpen]);
 
   if (!isOpen || !user) return null;
+
+  // Utiliza exclusivamente o histórico do usuário logado
+  const history = user.history || [];
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPhone(formatPhone(e.target.value));
@@ -137,25 +139,33 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                 Histórico de Pontos e Resgates:
               </span>
 
-              <div className="space-y-2">
-                {FIDELITY_HISTORY_MOCK.map((item) => (
-                  <div key={item.id} className="p-3 bg-stone-50 border border-stone-200 rounded-xl flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2.5">
-                      <div className={`p-2 rounded-lg ${item.type === 'earned' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800'}`}>
-                        {item.type === 'earned' ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
+              {history.length > 0 ? (
+                <div className="space-y-2">
+                  {history.map((item) => (
+                    <div key={item.id} className="p-3 bg-stone-50 border border-stone-200 rounded-xl flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2.5">
+                        <div className={`p-2 rounded-lg ${item.type === 'earned' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800'}`}>
+                          {item.type === 'earned' ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
+                        </div>
+                        <div>
+                          <p className="font-bold text-stone-800">{item.title}</p>
+                          <span className="text-[10px] text-stone-400">{item.date}</span>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-bold text-stone-800">{item.title}</p>
-                        <span className="text-[10px] text-stone-400">{item.date}</span>
-                      </div>
-                    </div>
 
-                    <span className={`font-mono font-black ${item.type === 'earned' ? 'text-emerald-700' : 'text-amber-800'}`}>
-                      {item.points}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                      <span className={`font-mono font-black ${item.type === 'earned' ? 'text-emerald-700' : 'text-amber-800'}`}>
+                        {item.points}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-6 text-center border border-dashed border-stone-200 rounded-xl text-stone-400 space-y-2">
+                  <History size={28} className="mx-auto text-stone-300" />
+                  <p className="text-xs font-semibold">Nenhuma movimentação ainda.</p>
+                  <p className="text-[10px]">Faça seu primeiro pedido para acumular pontos!</p>
+                </div>
+              )}
 
               <div className="bg-amber-50/70 border border-amber-200/80 rounded-xl p-3 text-[11px] text-amber-900 flex items-center gap-2 mt-4">
                 <Gift size={16} className="text-amber-800 shrink-0" />
